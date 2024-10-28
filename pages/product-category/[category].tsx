@@ -77,7 +77,7 @@ const ProductCategory: React.FC<Props> = ({
         <div className="app-x-padding app-max-width mt-3 mb-14">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 sm:gap-y-6 mb-10">
             {items.map((item) => (
-              <Card key={item.id} item={item} />
+              <Card key={item._id} item={item} />
             ))}
           </div>
           {category !== "new-arrivals" && (
