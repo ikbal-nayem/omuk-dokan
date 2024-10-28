@@ -22,11 +22,11 @@ const Card: FC<Props> = ({ item }) => {
 	const [isHovered, setIsHovered] = useState(false);
 	const [isWLHovered, setIsWLHovered] = useState(false);
 
-	const { id, name, price, img1, img2 } = item;
+	const { _id, name, price, img1, img2 } = item;
 
-	const itemLink = `/products/${encodeURIComponent(id)}`;
+	const itemLink = `/products/${encodeURIComponent(_id)}`;
 
-	const alreadyWishlisted = wishlist.filter((wItem) => wItem.id === id).length > 0;
+	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === _id).length > 0;
 
 	const handleWishlist = () => {
 		alreadyWishlisted ? deleteWishlistItem!(item) : addToWishlist!(item);

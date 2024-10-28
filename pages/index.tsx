@@ -96,10 +96,10 @@ const Home: React.FC<Props> = ({ products }) => {
 						</div>
 					</div>
 					<div className='grid grid-cols-2 md:grid-cols-4 gap-x-4 lg:gap-x-12 gap-y-6 mb-10 app-x-padding'>
-						<Card key={currentItems[1]?.id} item={currentItems[1]} />
-						<Card key={currentItems[2]?.id} item={currentItems[2]} />
-						<Card key={currentItems[3]?.id} item={currentItems[3]} />
-						<Card key={currentItems[4]?.id} item={currentItems[4]} />
+						<Card key={currentItems[1]?._id} item={currentItems[1]} />
+						<Card key={currentItems[2]?._id} item={currentItems[2]} />
+						<Card key={currentItems[3]?._id} item={currentItems[3]} />
+						<Card key={currentItems[4]?._id} item={currentItems[4]} />
 					</div>
 				</section>
 
@@ -114,7 +114,7 @@ const Home: React.FC<Props> = ({ products }) => {
 					</div>
 					<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 sm:gap-y-6 mb-10'>
 						{currentItems.map((item) => (
-							<Card key={item.id} item={item} />
+							<Card key={item._id} item={item} />
 						))}
 					</div>
 					<div className='flex justify-center'>

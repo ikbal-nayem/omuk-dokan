@@ -27,8 +27,8 @@ const Search: React.FC<Props> = ({ items, searchWord }) => {
 				<div className='bg-lightgreen h-16 w-full flex items-center'>
 					<div className='app-x-padding app-max-width w-full'>
 						<div className='breadcrumb'>
-							<Link href='/'>
-								<span className='text-gray400'>{t('home')}</span>
+							<Link href='/' className='text-gray400'>
+								{t('home')}
 							</Link>{' '}
 							/ <span>{t('search_results')}</span>
 						</div>
@@ -58,7 +58,7 @@ const Search: React.FC<Props> = ({ items, searchWord }) => {
 					) : (
 						<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 sm:gap-y-6 mb-10'>
 							{items.map((item) => (
-								<Card key={item.id} item={item} />
+								<Card key={item._id} item={item} />
 							))}
 						</div>
 					)}
@@ -72,7 +72,9 @@ const Search: React.FC<Props> = ({ items, searchWord }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ locale, query: { q = '' } }) => {
-	const res = await axios.post(`${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/product/search?q=${q}`);
+	const res = await axios.post(`${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/product/search`, {
+		filter: { searchKey: q },
+	});
 	const fetchedProducts: apiProductsType[] = res.data.data.map((product: apiProductsType) => ({
 		...product,
 		img1: product.images?.[0] || COMMON_URL.DUMMY_URL,

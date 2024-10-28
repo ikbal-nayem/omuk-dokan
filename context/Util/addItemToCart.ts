@@ -5,7 +5,7 @@ const addItemToCart = (
   item: itemType,
   add_one = false
 ) => {
-  const duplicate = cartItems.some((cartItem) => cartItem.id === item.id);
+  const duplicate = cartItems.some((cartItem) => cartItem._id === item._id);
 
   if (duplicate) {
     return cartItems.map((cartItem) => {
@@ -15,7 +15,7 @@ const addItemToCart = (
         : (itemQty = item.qty);
 
       console.log(itemQty);
-      return cartItem.id === item.id ? { ...cartItem, qty: itemQty } : cartItem;
+      return cartItem._id === item._id ? { ...cartItem, qty: itemQty } : cartItem;
     });
   }
   // console.log(itemQty);
@@ -24,7 +24,7 @@ const addItemToCart = (
   return [
     ...cartItems,
     {
-      id: item.id,
+      id: item._id,
       name: item.name,
       price: item.price,
       img1: item.img1,
