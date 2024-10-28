@@ -23,7 +23,7 @@ const Wishlist = () => {
   return (
     <div>
       {/* ===== Head Section ===== */}
-      <Header title={`Wishlist - Haru Fashion`} />
+      <Header title={`Wishlist - Omuk Dokan`} />
 
       <main id="main-content">
         {/* ===== Heading & Continue Shopping */}

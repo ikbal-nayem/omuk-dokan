@@ -40,7 +40,7 @@ export default function Document() {
 
         <meta property="og:url" content="https://haru-fashion.vercel.app" />
         <link rel="canonical" href="https://haru-fashion.vercel.app" />
-        <meta property="og:site_name" content="Haru Fashion" />
+        <meta property="og:site_name" content="Omuk Dokan" />
         <meta property="og:description" content={desc} key="og_description" />
         <meta property="og:title" content={title} key="og_title" />
         <meta
