@@ -23,6 +23,7 @@ import { apiProductsType, itemType } from '../../context/cart/cart-types';
 import { useCart } from '../../context/cart/CartProvider';
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
 import HeartSolid from '../../public/icons/HeartSolid';
+import { COMMON_URL } from '../../utils/util';
 
 type Props = {
 	product: itemType;
@@ -40,7 +41,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 	const [currentQty, setCurrentQty] = useState(1);
 	const t = useTranslations('Category');
 
-	const alreadyWishlisted = wishlist.filter((wItem) => wItem.id === product.id).length > 0;
+	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === product._id).length > 0;
 
 	useEffect(() => {
 		setMainImg(product.img1);
@@ -50,7 +51,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 		setSize(value);
 	};
 
-	const currentItem = {
+	const currentItem: itemType = {
 		...product,
 		qty: currentQty,
 	};
@@ -67,12 +68,12 @@ const Product: React.FC<Props> = ({ product, products }) => {
 				<div className='bg-lightgreen h-16 w-full flex items-center border-t-2 border-gray200'>
 					<div className='app-x-padding app-max-width w-full'>
 						<div className='breadcrumb'>
-							<Link href='/'>
-								<span className='text-gray400'>{t('home')}</span>
+							<Link href='/' className='text-gray400'>
+								{t('home')}
 							</Link>{' '}
 							/{' '}
-							<Link href={`/product-category/${product.categoryName}`}>
-								<span className='text-gray400 capitalize'>{t(product.categoryName as string)}</span>
+							<Link href={`/product-category/${product.categoryName}`} className='text-gray400 capitalize'>
+								{t(product.categoryName as string)}
 							</Link>{' '}
 							/ <span>{product.name}</span>
 						</div>
@@ -107,7 +108,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 								modules={[Autoplay, Pagination]}
 								slidesPerView={1}
 								spaceBetween={0}
-								loop={true}
+								// loop={true}
 								pagination={{
 									clickable: true,
 								}}
@@ -132,7 +133,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 									/>
 								</SwiperSlide>
 							</Swiper>
-							<div className='hidden sm:block h-full'>
+							{/* <div className='hidden sm:block h-full'>
 								<Image
 									className='w-full'
 									src={mainImg as string}
@@ -140,7 +141,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 									height={1282}
 									alt={product.name}
 								/>
-							</div>
+							</div> */}
 						</div>
 					</div>
 					<div className='infoSection w-full md:w-1/2 h-auto py-8 sm:pl-4 flex flex-col'>
@@ -250,16 +251,16 @@ const Product: React.FC<Props> = ({ product, products }) => {
 						className='mySwiper card-swiper sm:hidden'
 					>
 						{products.map((item) => (
-							<SwiperSlide key={item.id}>
+							<SwiperSlide key={item._id}>
 								<div className='mb-6'>
-									<Card key={item.id} item={item} />
+									<Card key={item._id} item={item} />
 								</div>
 							</SwiperSlide>
 						))}
 					</Swiper>
 					<div className='hidden sm:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-10 sm:gap-y-6 mb-10'>
 						{products.map((item) => (
-							<Card key={item.id} item={item} />
+							<Card key={item._id} item={item} />
 						))}
 					</div>
 				</div>
@@ -273,23 +274,25 @@ const Product: React.FC<Props> = ({ product, products }) => {
 
 export const getServerSideProps: GetServerSideProps = async ({ params, locale }) => {
 	const paramId = params!.id as string;
-	const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/${paramId}`);
+	const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/get/${paramId}`);
 	const fetchedProduct: apiProductsType = res.data.data;
 
 	let product: itemType = {
-		id: fetchedProduct.id,
+		_id: fetchedProduct._id,
 		name: fetchedProduct.name,
 		price: fetchedProduct.price,
-		detail: fetchedProduct.detail,
-		img1: fetchedProduct.images?.[0],
-		img2: fetchedProduct.images?.[1],
+		detail: fetchedProduct.description,
+		img1: fetchedProduct?.images?.[0] || COMMON_URL.DUMMY_URL,
+		img2: fetchedProduct?.images?.[1] || COMMON_URL.DUMMY_URL,
+		categoryId: fetchedProduct!.category!._id,
 		categoryName: fetchedProduct!.category!.name,
 	};
 
 	// Might be temporary solution for suggested products
-	const randomProductRes = await axios.get(
-		`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?category=${product.categoryName}`
-	);
+	const randomProductRes = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/search`, {
+		filter: { category: product.categoryId },
+		meta: { limit: 5, page: 1 },
+	});
 	const fetchedProducts: apiProductsType[] = randomProductRes.data.data;
 
 	// Shuffle array
@@ -301,11 +304,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params, locale })
 	let products: itemType[] = [];
 	randomFetchedProducts.forEach((randomProduct: apiProductsType) => {
 		products.push({
-			id: randomProduct.id,
+			_id: randomProduct._id,
 			name: randomProduct.name,
 			price: randomProduct.price,
-			img1: randomProduct.images?.[0],
-			img2: randomProduct.images?.[1],
+			img1: randomProduct.images?.[0] || COMMON_URL.DUMMY_URL,
+			img2: randomProduct.images?.[1] || COMMON_URL.DUMMY_URL,
 		});
 	});
 

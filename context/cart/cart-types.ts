@@ -6,19 +6,19 @@ export const SET_CART = "SET_CART";
 export const CLEAR_CART = "CLEAR_CART";
 
 export type commonType = {
-  id: number;
+  _id: string;
   name: string;
   price: number;
   qty?: number | undefined;
   discountPercent?: number;
   description?: string;
   detail?: string;
-  categoryId?: number;
+  categoryId?: string;
   stock?: number;
   createdAt?: string;
   updatedAt?: string | null;
   category?: {
-    id?: number;
+    _id?: string;
     name?: string;
     description?: string;
     thumbnailImage?: string;

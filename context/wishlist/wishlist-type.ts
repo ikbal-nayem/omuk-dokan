@@ -4,7 +4,7 @@ export const SET_WISHLIST = "SET_WISHLIST";
 export const CLEAR_WISHLIST = "CLEAR_WISHLIST";
 
 export type itemType = {
-  id: number;
+  _id: string;
   img1?: string;
   img2?: string;
   name: string;
