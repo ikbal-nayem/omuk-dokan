@@ -22,7 +22,7 @@ const Card: FC<Props> = ({ item }) => {
 	const [isHovered, setIsHovered] = useState(false);
 	const [isWLHovered, setIsWLHovered] = useState(false);
 
-	const { _id, name, price, img1, img2 } = item;
+	const { _id, name, price } = item;
 
 	const itemLink = `/products/${encodeURIComponent(_id)}`;
 
@@ -37,27 +37,19 @@ const Card: FC<Props> = ({ item }) => {
 			<div className={styles.imageContainer}>
 				<Link href={itemLink}>
 					<span tabIndex={-1} onMouseOver={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-						{!isHovered && (
-							<Image
-								src={makePreviewURL(img1 as string)}
-								alt={name}
-								width={230}
-								height={300}
-								layout='responsive'
-                onError={()=>COMMON_URL.ERROR_IMAGE}
-							/>
-						)}
-						{isHovered && (
-							<Image
-								className='transition-transform transform hover:scale-110 duration-1000'
-								src={makePreviewURL(img2 as string)}
-								alt={name}
-								width={230}
-								height={300}
-								layout='responsive'
-                onError={()=>COMMON_URL.ERROR_IMAGE}
-							/>
-						)}
+						<Image
+							className='transition-transform transform hover:scale-110 duration-1000'
+							src={
+								(isHovered
+									? item?.img2 && makePreviewURL(item?.img2 as string)
+									: item?.img1 && makePreviewURL(item?.img1 as string)) || COMMON_URL.DUMMY_URL
+							}
+							alt={name}
+							width={230}
+							height={300}
+							layout='responsive'
+							onError={() => COMMON_URL.ERROR_IMAGE}
+						/>
 					</span>
 				</Link>
 				<button
@@ -79,7 +71,7 @@ const Card: FC<Props> = ({ item }) => {
 				<Link href={itemLink}>
 					<span className={styles.itemName}>{name}</span>
 				</Link>
-				<div className='text-gray400'>$ {price}</div>
+				<div className='text-gray400'>৳ {price}</div>
 				<button type='button' onClick={() => addOne!(item)} className='uppercase font-bold text-sm sm:hidden'>
 					{t('add_to_cart')}
 				</button>

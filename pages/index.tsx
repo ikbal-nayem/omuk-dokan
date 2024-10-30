@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
@@ -7,22 +7,25 @@ import React, { useEffect, useState } from 'react';
 import Button from '../components/Buttons/Button';
 import LinkButton from '../components/Buttons/LinkButton';
 import Card from '../components/Card/Card';
+import Footer from '../components/Footer/Footer';
 import Header from '../components/Header/Header';
 import Slideshow from '../components/HeroSection/Slideshow';
-import Footer from '../components/Footer/Footer';
 import OverlayContainer from '../components/OverlayContainer/OverlayContainer';
 import TestiSlider from '../components/TestiSlider/TestiSlider';
 import { apiProductsType, itemType } from '../context/cart/cart-types';
 import { COMMON_URL } from '../utils/util';
 
-import ourShop from '../public/bg-img/ourshop.png';
 import { IObject } from '../interface/common.interface';
+import { ICatrgoryTree } from '../interface/product.interface';
+import ourShop from '../public/bg-img/ourshop.png';
+import axiosIns from '../services/api/axios.config';
 
 type Props = {
+	category: ICatrgoryTree[];
 	products: itemType[];
 };
 
-const Home: React.FC<Props> = ({ products }) => {
+const Home: React.FC<Props> = ({ products, category }) => {
 	const t = useTranslations('Index');
 	const [currentItems, setCurrentItems] = useState(products);
 	const [isFetching, setIsFetching] = useState(false);
@@ -51,7 +54,7 @@ const Home: React.FC<Props> = ({ products }) => {
 
 	return (
 		<>
-			<Header />
+			<Header category={category} />
 			<Slideshow />
 
 			<main id='main-content' className='-mt-20'>
@@ -140,9 +143,12 @@ const Home: React.FC<Props> = ({ products }) => {
 	);
 };
 
-export const getStaticProps: GetStaticProps = async ({ locale }) => {
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 	let products: IObject[] = [];
-	const res = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/search`);
+	let category: ICatrgoryTree[] = [];
+	const res = await axiosIns.post('/product/search', { meta: { limit: 20, page: 1 } });
+	const categoryRes = await axiosIns.get('/product-config/category-tree?isActive=true');
+	category = categoryRes.data.data;
 
 	const fetchedProducts = res.data;
 	fetchedProducts.data.forEach((product: apiProductsType) => {
@@ -150,16 +156,16 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 			id: product?._id,
 			name: product?.name,
 			price: product?.price,
-			img1: product?.images?.[0] || COMMON_URL.DUMMY_URL,
-			img2: product?.images?.[1] || COMMON_URL.DUMMY_URL,
+			img1: product?.images?.[0] || null,
+			img2: product?.images?.[1] || null,
 		});
 	});
 	return {
 		props: {
 			messages: {
-				// ...require(`../messages/index/${locale}.json`),
 				...require(`../locales/${locale}.json`),
 			},
+			category,
 			products,
 		},
 	};

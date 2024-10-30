@@ -13,14 +13,16 @@ import SearchForm from '../SearchForm/SearchForm';
 import AppHeader from './AppHeader';
 import TopNav from './TopNav';
 
-import styles from './Header.module.css';
 import { COMMON_URL } from '../../utils/util';
+import styles from './Header.module.css';
+import { ICatrgoryTree } from '../../interface/product.interface';
 
 type Props = {
 	title?: string;
+	category?: ICatrgoryTree[];
 };
 
-const Header: React.FC<Props> = ({ title }) => {
+const Header: React.FC<Props> = ({ title, category }) => {
 	const t = useTranslations('Navigation');
 	const { wishlist } = useWishlist();
 	const [animate, setAnimate] = useState('');
@@ -64,9 +66,7 @@ const Header: React.FC<Props> = ({ title }) => {
 	}
 	return (
 		<>
-			{/* ===== <head> section ===== */}
 			<AppHeader title={title} />
-
 			{/* ===== Skip to main content button ===== */}
 			<a
 				href='#main-content'
@@ -93,26 +93,13 @@ const Header: React.FC<Props> = ({ title }) => {
 
 						{/* Left Nav */}
 						<ul className={`flex-0 lg:flex-1 flex ${styles.leftMenu}`}>
-							<li>
-								<Link href={`/product-category/men`}>
-									<span>{t('men')}</span>
-								</Link>
-							</li>
-							<li>
-								<Link href={`/product-category/women`}>
-									<span>{t('women')}</span>
-								</Link>
-							</li>
-							<li>
-								<Link href='/product-category/bags'>
-									<span>{t('bags')}</span>
-								</Link>
-							</li>
-							<li>
-								<Link href='/coming-soon'>
-									<span>{t('blogs')}</span>
-								</Link>
-							</li>
+							{category?.map((c) => (
+								<li>
+									<Link key={c._id} href={`/category/${c.slug}`}>
+										<span>{c.name}</span>
+									</Link>
+								</li>
+							))}
 						</ul>
 
 						{/* Haru Logo */}
