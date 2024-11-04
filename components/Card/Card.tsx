@@ -3,16 +3,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FC, useState } from 'react';
 
-import { itemType } from '../../context/cart/cart-types';
 import { useCart } from '../../context/cart/CartProvider';
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
+import { IProduct } from '../../interface/product.interface';
 import Heart from '../../public/icons/Heart';
 import HeartSolid from '../../public/icons/HeartSolid';
 import { COMMON_URL, makePreviewURL } from '../../utils/util';
 import styles from './Card.module.css';
 
 type Props = {
-	item: itemType;
+	item: IProduct;
 };
 
 const Card: FC<Props> = ({ item }) => {
@@ -22,11 +22,9 @@ const Card: FC<Props> = ({ item }) => {
 	const [isHovered, setIsHovered] = useState(false);
 	const [isWLHovered, setIsWLHovered] = useState(false);
 
-	const { _id, name, price } = item;
+	const itemLink = `/products/${encodeURIComponent(item?._id)}`;
 
-	const itemLink = `/products/${encodeURIComponent(_id)}`;
-
-	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === _id).length > 0;
+	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === item?._id).length > 0;
 
 	const handleWishlist = () => {
 		alreadyWishlisted ? deleteWishlistItem!(item) : addToWishlist!(item);
@@ -44,7 +42,7 @@ const Card: FC<Props> = ({ item }) => {
 									? item?.img2 && makePreviewURL(item?.img2 as string)
 									: item?.img1 && makePreviewURL(item?.img1 as string)) || COMMON_URL.DUMMY_URL
 							}
-							alt={name}
+							alt={item?.name}
 							width={230}
 							height={300}
 							layout='responsive'
@@ -69,9 +67,9 @@ const Card: FC<Props> = ({ item }) => {
 
 			<div className='content'>
 				<Link href={itemLink}>
-					<span className={styles.itemName}>{name}</span>
+					<span className={styles.itemName}>{item?.name}</span>
 				</Link>
-				<div className='text-gray400'>৳ {price}</div>
+				<div className='text-gray400'>৳ {item?.price}</div>
 				<button type='button' onClick={() => addOne!(item)} className='uppercase font-bold text-sm sm:hidden'>
 					{t('add_to_cart')}
 				</button>

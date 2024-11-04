@@ -1,45 +1,50 @@
-import { NextComponentType, NextPageContext } from "next";
-import Router from "next/router";
-import NProgress from "nprogress";
-import { IntlProvider } from "next-intl";
+import { NextComponentType, NextPageContext } from 'next';
+import { IntlProvider } from 'next-intl';
+import Router from 'next/router';
+import NProgress from 'nprogress';
 
-import { ProvideCart } from "../context/cart/CartProvider";
-import { ProvideWishlist } from "../context/wishlist/WishlistProvider";
-import { ProvideAuth } from "../context/AuthContext";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ProvideAuth } from '../context/auth.context';
+import { ProvideCart } from '../context/cart/CartProvider';
+import { ProvideWishlist } from '../context/wishlist/WishlistProvider';
 
-import "../styles/globals.css";
-import "animate.css";
-import "nprogress/nprogress.css";
+import 'animate.css';
+import 'nprogress/nprogress.css';
+import '../styles/globals.css';
 
 // Import Swiper styles
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/scrollbar";
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/scrollbar';
 
-Router.events.on("routeChangeStart", () => NProgress.start());
-Router.events.on("routeChangeComplete", () => NProgress.done());
-Router.events.on("routeChangeError", () => NProgress.done());
+Router.events.on('routeChangeStart', () => NProgress.start());
+Router.events.on('routeChangeComplete', () => NProgress.done());
+Router.events.on('routeChangeError', () => NProgress.done());
 
 type AppCustomProps = {
-  Component: NextComponentType<NextPageContext, any, {}>;
-  pageProps: any;
-  cartState: string;
-  wishlistState: string;
+	Component: NextComponentType<NextPageContext, any, {}>;
+	pageProps: any;
+	cartState: string;
+	wishlistState: string;
 };
 
+const queryClient = new QueryClient();
+
 const MyApp = ({ Component, pageProps }: AppCustomProps) => {
-  return (
-    <IntlProvider messages={pageProps?.messages} locale="en" timeZone="Asia/Dhaka">
-      <ProvideAuth>
-        <ProvideWishlist>
-          <ProvideCart>
-            <Component {...pageProps} />
-          </ProvideCart>
-        </ProvideWishlist>
-      </ProvideAuth>
-    </IntlProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<IntlProvider messages={pageProps?.messages} locale='en' timeZone='Asia/Dhaka'>
+				<ProvideAuth>
+					<ProvideWishlist>
+						<ProvideCart>
+							<Component {...pageProps} />
+						</ProvideCart>
+					</ProvideWishlist>
+				</ProvideAuth>
+			</IntlProvider>
+		</QueryClientProvider>
+	);
 };
 
 export default MyApp;

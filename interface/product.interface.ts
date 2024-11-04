@@ -1,6 +1,6 @@
 import { IObject } from './common.interface';
 
-export interface ICatrgoryTree {
+export interface ICatrgory {
 	_id: string;
 	name: string;
 	parent?: string;
@@ -9,7 +9,10 @@ export interface ICatrgoryTree {
 	isActive: boolean;
 	createdAt: string;
 	updatedAt: string;
-	image: '';
+	image: string;
+}
+
+export interface ICatrgoryTree extends ICatrgory {
 	subcategories: Array<ICatrgoryTree>;
 }
 
@@ -40,9 +43,9 @@ export interface IProduct {
 	weightUnit: string;
 	options: [
 		{
-			id: number | string;
-			name: string;
 			_id: string;
+			id: number;
+			name: string;
 			values: IObject[];
 		}
 	];
@@ -54,6 +57,8 @@ export interface IProduct {
 	collections: ICollection[];
 	tags: string[];
 	images: string[];
+	img1?: string | null;
+	img2?: string | null;
 	isActive: boolean;
 	createdAt: string;
 	updatedAt: string;

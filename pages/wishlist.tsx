@@ -81,12 +81,12 @@ const Wishlist = () => {
                   </tr>
                 ) : (
                   wishlist.map((item) => {
-                    subtotal += item.price * item.qty!;
+                    subtotal += item.price * item.stock!;
                     return (
-                      <tr className="border-b-2 border-gray200" key={item.id}>
+                      <tr className="border-b-2 border-gray200" key={item._id}>
                         <td className="my-3 flex justify-center flex-col items-start sm:items-center">
                           <Link
-                            href={`/products/${encodeURIComponent(item.id)}`}
+                            href={`/products/${encodeURIComponent(item._id)}`}
                           >
                             <span>
                               <Image

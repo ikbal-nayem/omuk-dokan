@@ -8,8 +8,9 @@ import Card from '../../components/Card/Card';
 import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header';
 import Pagination from '../../components/Util/Pagination';
-import { apiProductsType, itemType } from '../../context/cart/cart-types';
+import { apiProductsType } from '../../context/cart/cart-types';
 import { IMeta } from '../../interface/common.interface';
+import { ICatrgoryTree, IProduct } from '../../interface/product.interface';
 import DownArrow from '../../public/icons/DownArrow';
 import axiosIns from '../../services/api/axios.config';
 import { toCapitalized } from '../../utils/util';
@@ -17,17 +18,17 @@ import { toCapitalized } from '../../utils/util';
 type OrderType = 'latest' | 'price' | 'price-desc';
 
 type Props = {
-	items: itemType[];
+	items: IProduct[];
+	categoryTree: ICatrgoryTree[];
 	meta: IMeta;
 	orderby: OrderType;
 };
 
-const ProductCategory: React.FC<Props> = ({ items, meta, orderby }) => {
+const ProductCategory: React.FC<Props> = ({ items, categoryTree, meta, orderby }) => {
 	const t = useTranslations('Category');
 
 	const router = useRouter();
 	const { category } = router.query;
-	// const lastPage = Math.ceil(numberOfProducts / 10);
 
 	const limit = meta?.limit || 10;
 	const firstIndex = (meta?.page || 1) * limit - limit + 1;
@@ -35,7 +36,7 @@ const ProductCategory: React.FC<Props> = ({ items, meta, orderby }) => {
 	return (
 		<div>
 			{/* ===== Head Section ===== */}
-			<Header title={`${toCapitalized(category as string)} - OD`} />
+			<Header title={`${toCapitalized(category as string)} - OD`} category={categoryTree} />
 
 			<main id='main-content'>
 				{/* ===== Breadcrumb Section ===== */}
@@ -88,35 +89,6 @@ export const getServerSideProps: GetServerSideProps = async ({
 }) => {
 	const categorySlug = params!.category as string;
 
-	// const start = +page === 1 ? 0 : (+page - 1) * 10;
-
-	// let numberOfProducts = 0;
-
-	// if (category !== "new-arrivals") {
-	//   const numberOfProductsResponse = await axios.get(
-	//     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products/count?category=${category}`
-	//   );
-	//   numberOfProducts = +numberOfProductsResponse.data.count;
-	// } else {
-	//   numberOfProducts = 10;
-	// }
-
-	// let order_by: string;
-
-	// if (orderby === "price") {
-	//   order_by = "price";
-	// } else if (orderby === "price-desc") {
-	//   order_by = "price.desc";
-	// } else {
-	//   order_by = "createdAt.desc";
-	// }
-
-	// const reqUrl =
-	//   category === "new-arrivals"
-	//     ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?order_by=createdAt.desc&limit=10`
-	//     : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/products?order_by=${order_by}&offset=${start}&limit=10&category=${category}`;
-
-	// const res = await axios.get(reqUrl);
 	const reqBody = { filter: { categorySlug }, meta: { limit, page } };
 	const res = await axiosIns.post('/product/search', reqBody);
 	const fetchedProducts = res.data.data?.map((product: apiProductsType) => ({
@@ -124,10 +96,13 @@ export const getServerSideProps: GetServerSideProps = async ({
 		img1: product?.images?.[0] || null,
 		img2: product?.images?.[1] || null,
 	}));
+	const categoryRes = await axiosIns.get('/product-config/category-tree?isActive=true');
+	const category = categoryRes.data?.data;
 
 	return {
 		props: {
 			messages: (await import(`../../locales/${locale}.json`)).default,
+			categoryTree: category,
 			items: fetchedProducts,
 			meta: res.data?.meta,
 			orderby: 'latest',

@@ -8,18 +8,18 @@ import UserIcon from '../../public/icons/UserIcon';
 import WhistlistIcon from '../../public/icons/WhistlistIcon';
 import AuthForm from '../Auth/AuthForm';
 import CartItem from '../CartItem/CartItem';
-import Menu from '../Menu/Menu';
 import SearchForm from '../SearchForm/SearchForm';
 import AppHeader from './AppHeader';
+import { Menu } from './Menu';
 import TopNav from './TopNav';
 
+import { ICatrgoryTree } from '../../interface/product.interface';
 import { COMMON_URL } from '../../utils/util';
 import styles from './Header.module.css';
-import { ICatrgoryTree } from '../../interface/product.interface';
 
 type Props = {
 	title?: string;
-	category?: ICatrgoryTree[];
+	category: ICatrgoryTree[];
 };
 
 const Header: React.FC<Props> = ({ title, category }) => {
@@ -88,7 +88,7 @@ const Header: React.FC<Props> = ({ title, category }) => {
 					<div className={`flex justify-between align-baseline app-x-padding ${styles.mainMenu}`}>
 						{/* Hamburger Menu and Mobile Nav */}
 						<div className='flex-1 lg:flex-0 lg:hidden'>
-							<Menu />
+							<Menu categoryTree={category} />
 						</div>
 
 						{/* Left Nav */}

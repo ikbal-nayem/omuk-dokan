@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { FC, useContext } from "react";
+import React, { FC } from "react";
 import { roundDecimal } from "../Util/utilFunc";
 
 type Props = {

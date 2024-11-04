@@ -1,8 +1,7 @@
-import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import Button from '../components/Buttons/Button';
 import LinkButton from '../components/Buttons/LinkButton';
@@ -12,40 +11,41 @@ import Header from '../components/Header/Header';
 import Slideshow from '../components/HeroSection/Slideshow';
 import OverlayContainer from '../components/OverlayContainer/OverlayContainer';
 import TestiSlider from '../components/TestiSlider/TestiSlider';
-import { apiProductsType, itemType } from '../context/cart/cart-types';
-import { COMMON_URL } from '../utils/util';
 
+import { useQueries } from '@tanstack/react-query';
 import { IObject } from '../interface/common.interface';
-import { ICatrgoryTree } from '../interface/product.interface';
+import { ICatrgoryTree, IProduct } from '../interface/product.interface';
 import ourShop from '../public/bg-img/ourshop.png';
+import { QCategoryTree } from '../query/product.query';
 import axiosIns from '../services/api/axios.config';
 
 type Props = {
 	category: ICatrgoryTree[];
-	products: itemType[];
+	products: IProduct[];
 };
 
 const Home: React.FC<Props> = ({ products, category }) => {
 	const t = useTranslations('Index');
-	const [currentItems, setCurrentItems] = useState(products);
 	const [isFetching, setIsFetching] = useState(false);
 
-	useEffect(() => {
-		if (!isFetching) return;
-		const fetchData = async () => {
-			const res = await axios.post(
-				`${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/product/search?order_by=createdAt.desc&offset=${currentItems.length}&limit=10`
-			);
-			const fetchedProducts = res.data.data.map((product: apiProductsType) => ({
-				...product,
-				img1: product.images?.[0] || COMMON_URL.DUMMY_URL,
-				img2: product.images?.[1] || COMMON_URL.DUMMY_URL,
-			}));
-			setCurrentItems((products) => [...products, ...fetchedProducts]);
-			setIsFetching(false);
-		};
-		fetchData();
-	}, [isFetching, currentItems.length]);
+	const currentItems = products;
+
+	// useEffect(() => {
+	// 	if (!isFetching) return;
+	// 	const fetchData = async () => {
+	// 		const res = await axios.post(
+	// 			`${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/product/search?order_by=createdAt.desc&offset=${currentItems.length}&limit=10`
+	// 		);
+	// 		const fetchedProducts = res.data.data.map((product: apiProductsType) => ({
+	// 			...product,
+	// 			img1: product.images?.[0] || COMMON_URL.DUMMY_URL,
+	// 			img2: product.images?.[1] || COMMON_URL.DUMMY_URL,
+	// 		}));
+	// 		setCurrentItems((products) => [...products, ...fetchedProducts]);
+	// 		setIsFetching(false);
+	// 	};
+	// 	fetchData();
+	// }, [isFetching, currentItems.length]);
 
 	const handleSeemore = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.preventDefault();
@@ -99,10 +99,10 @@ const Home: React.FC<Props> = ({ products, category }) => {
 						</div>
 					</div>
 					<div className='grid grid-cols-2 md:grid-cols-4 gap-x-4 lg:gap-x-12 gap-y-6 mb-10 app-x-padding'>
-						<Card key={currentItems[1]?._id} item={currentItems[1]} />
-						<Card key={currentItems[2]?._id} item={currentItems[2]} />
-						<Card key={currentItems[3]?._id} item={currentItems[3]} />
-						<Card key={currentItems[4]?._id} item={currentItems[4]} />
+						<Card key={currentItems[1]?._id} item={currentItems?.[1]} />
+						<Card key={currentItems[2]?._id} item={currentItems?.[2]} />
+						<Card key={currentItems[3]?._id} item={currentItems?.[3]} />
+						<Card key={currentItems[4]?._id} item={currentItems?.[4]} />
 					</div>
 				</section>
 
@@ -144,21 +144,16 @@ const Home: React.FC<Props> = ({ products, category }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
-	let products: IObject[] = [];
+	let products: IProduct[] = [];
 	let category: ICatrgoryTree[] = [];
 	const res = await axiosIns.post('/product/search', { meta: { limit: 20, page: 1 } });
 	const categoryRes = await axiosIns.get('/product-config/category-tree?isActive=true');
 	category = categoryRes.data.data;
 
 	const fetchedProducts = res.data;
-	fetchedProducts.data.forEach((product: apiProductsType) => {
-		products.push({
-			id: product?._id,
-			name: product?.name,
-			price: product?.price,
-			img1: product?.images?.[0] || null,
-			img2: product?.images?.[1] || null,
-		});
+	fetchedProducts.data.forEach((product: IProduct) => {
+		product.img1 = product?.images?.[0] || null;
+		product.img2 = product?.images?.[1] || null;
 	});
 	return {
 		props: {

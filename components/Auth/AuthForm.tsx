@@ -2,7 +2,7 @@ import { Fragment, useState, FC } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useTranslations } from "next-intl";
 
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth.context";
 import Button from "../Buttons/Button";
 import Login from "./Login";
 import Register from "./Register";

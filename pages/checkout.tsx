@@ -11,7 +11,7 @@ import { roundDecimal } from "../components/Util/utilFunc";
 import { useCart } from "../context/cart/CartProvider";
 import Input from "../components/Input/Input";
 import { itemType } from "../context/wishlist/wishlist-type";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/auth.context";
 
 // let w = window.innerWidth;
 type PaymentType = "CASH_ON_DELIVERY" | "BANK_TRANSFER";

@@ -1,5 +1,5 @@
-import { useContext, useEffect, useReducer } from "react";
-import { getCookie, setCookies } from "cookies-next";
+import { Reducer, useContext, useEffect, useReducer } from "react";
+import { getCookie, setCookie } from "cookies-next";
 
 import wishlistReducer from "./wishlistReducer";
 import WishlistContext from "./WishlistContext";
@@ -7,10 +7,10 @@ import {
   ADD_TO_WISHLIST,
   DELETE_WISHLIST_ITEM,
   CLEAR_WISHLIST,
-  itemType,
   wishlistType,
   SET_WISHLIST,
 } from "./wishlist-type";
+import { IProduct } from "../../interface/product.interface";
 
 export const ProvideWishlist = ({
   children,
@@ -29,7 +29,7 @@ export const useWishlist = () => useContext(WishlistContext);
 
 const useProvideWishlist = () => {
   const initPersistState: wishlistType = { wishlist: [] };
-  const [state, dispatch] = useReducer(wishlistReducer, initPersistState);
+  const [state, dispatch] = useReducer<Reducer<any, any>>(wishlistReducer, initPersistState);
 
   useEffect(() => {
     const initialWishlist = getCookie("wishlist");
@@ -40,17 +40,17 @@ const useProvideWishlist = () => {
   }, []);
 
   useEffect(() => {
-    setCookies("wishlist", state.wishlist);
+    setCookie("wishlist", state.wishlist);
   }, [state.wishlist]);
 
-  const addToWishlist = (item: itemType) => {
+  const addToWishlist = (item: IProduct) => {
     dispatch({
       type: ADD_TO_WISHLIST,
       payload: item,
     });
   };
 
-  const deleteWishlistItem = (item: itemType) => {
+  const deleteWishlistItem = (item: IProduct) => {
     dispatch({
       type: DELETE_WISHLIST_ITEM,
       payload: item,
