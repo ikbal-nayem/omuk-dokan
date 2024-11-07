@@ -10,3 +10,8 @@ export interface IMeta {
 export interface IObject {
 	[key: string]: string | number | boolean | any;
 }
+
+export interface IReducerAction {
+	type: string;
+	payload?: any;
+}

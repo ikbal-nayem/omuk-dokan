@@ -6,7 +6,6 @@ import {
   CLEAR_CART,
   DELETE_ITEM,
   ICart,
-  itemType,
   REMOVE_ITEM,
   SET_CART,
 } from './cart-types';

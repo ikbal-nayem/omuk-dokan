@@ -4,6 +4,7 @@ import Router from 'next/router';
 import NProgress from 'nprogress';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AppProvider } from '../context/App/app.context';
 import { ProvideAuth } from '../context/auth.context';
 import { ProvideCart } from '../context/cart/CartProvider';
 import { ProvideWishlist } from '../context/wishlist/WishlistProvider';
@@ -34,15 +35,17 @@ const queryClient = new QueryClient();
 const MyApp = ({ Component, pageProps }: AppCustomProps) => {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<IntlProvider messages={pageProps?.messages} locale='en' timeZone='Asia/Dhaka'>
-				<ProvideAuth>
-					<ProvideWishlist>
-						<ProvideCart>
-							<Component {...pageProps} />
-						</ProvideCart>
-					</ProvideWishlist>
-				</ProvideAuth>
-			</IntlProvider>
+			<AppProvider>
+				<IntlProvider messages={pageProps?.messages} locale='en' timeZone='Asia/Dhaka'>
+					<ProvideAuth>
+						<ProvideWishlist>
+							<ProvideCart>
+								<Component {...pageProps} />
+							</ProvideCart>
+						</ProvideWishlist>
+					</ProvideAuth>
+				</IntlProvider>
+			</AppProvider>
 		</QueryClientProvider>
 	);
 };

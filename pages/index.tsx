@@ -12,11 +12,9 @@ import Slideshow from '../components/HeroSection/Slideshow';
 import OverlayContainer from '../components/OverlayContainer/OverlayContainer';
 import TestiSlider from '../components/TestiSlider/TestiSlider';
 
-import { useQueries } from '@tanstack/react-query';
-import { IObject } from '../interface/common.interface';
+import { useApp } from '../context/App/app.context';
 import { ICatrgoryTree, IProduct } from '../interface/product.interface';
 import ourShop from '../public/bg-img/ourshop.png';
-import { QCategoryTree } from '../query/product.query';
 import axiosIns from '../services/api/axios.config';
 
 type Props = {
@@ -27,25 +25,9 @@ type Props = {
 const Home: React.FC<Props> = ({ products, category }) => {
 	const t = useTranslations('Index');
 	const [isFetching, setIsFetching] = useState(false);
+	const { appData } = useApp();
 
 	const currentItems = products;
-
-	// useEffect(() => {
-	// 	if (!isFetching) return;
-	// 	const fetchData = async () => {
-	// 		const res = await axios.post(
-	// 			`${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/product/search?order_by=createdAt.desc&offset=${currentItems.length}&limit=10`
-	// 		);
-	// 		const fetchedProducts = res.data.data.map((product: apiProductsType) => ({
-	// 			...product,
-	// 			img1: product.images?.[0] || COMMON_URL.DUMMY_URL,
-	// 			img2: product.images?.[1] || COMMON_URL.DUMMY_URL,
-	// 		}));
-	// 		setCurrentItems((products) => [...products, ...fetchedProducts]);
-	// 		setIsFetching(false);
-	// 	};
-	// 	fetchData();
-	// }, [isFetching, currentItems.length]);
 
 	const handleSeemore = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.preventDefault();
@@ -56,7 +38,6 @@ const Home: React.FC<Props> = ({ products, category }) => {
 		<>
 			<Header category={category} />
 			<Slideshow />
-
 			<main id='main-content' className='-mt-20'>
 				<section className='w-full h-auto py-10 border border-b-2 border-gray100'>
 					<div className='app-max-width app-x-padding h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
@@ -145,22 +126,24 @@ const Home: React.FC<Props> = ({ products, category }) => {
 
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 	let products: IProduct[] = [];
-	let category: ICatrgoryTree[] = [];
 	const res = await axiosIns.post('/product/search', { meta: { limit: 20, page: 1 } });
 	const categoryRes = await axiosIns.get('/product-config/category-tree?isActive=true');
-	category = categoryRes.data.data;
+	const collections = await axiosIns.get('/product-config/collections?isActive=true');
 
 	const fetchedProducts = res.data;
-	fetchedProducts.data.forEach((product: IProduct) => {
+	products = fetchedProducts.data.map((product: IProduct) => {
 		product.img1 = product?.images?.[0] || null;
 		product.img2 = product?.images?.[1] || null;
+		return product;
 	});
+
 	return {
 		props: {
 			messages: {
 				...require(`../locales/${locale}.json`),
 			},
-			category,
+			category: categoryRes.data?.data,
+			collections: collections.data?.data,
 			products,
 		},
 	};
