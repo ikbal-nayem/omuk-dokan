@@ -12,22 +12,20 @@ import Slideshow from '../components/HeroSection/Slideshow';
 import OverlayContainer from '../components/OverlayContainer/OverlayContainer';
 import TestiSlider from '../components/TestiSlider/TestiSlider';
 
-import { useApp } from '../context/App/app.context';
-import { ICatrgoryTree, IProduct } from '../interface/product.interface';
+import { ICatrgoryTree, ICollection, IProduct } from '../interface/product.interface';
 import ourShop from '../public/bg-img/ourshop.png';
 import axiosIns from '../services/api/axios.config';
 
 type Props = {
 	category: ICatrgoryTree[];
 	products: IProduct[];
+	collections: ICollection[];
 };
 
-const Home: React.FC<Props> = ({ products, category }) => {
+const Home: React.FC<Props> = ({ products, category, collections }) => {
 	const t = useTranslations('Index');
 	const [isFetching, setIsFetching] = useState(false);
-	const { appData } = useApp();
-
-	const currentItems = products;
+	const [seeAllCollectiions, setAllCollection] = useState(false);
 
 	const handleSeemore = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.preventDefault();
@@ -55,20 +53,33 @@ const Home: React.FC<Props> = ({ products, category }) => {
 								</LinkButton>
 							</OverlayContainer>
 						</div>
-						<div className='w-full'>
-							<OverlayContainer imgSrc='/bg-img/banner_minipage2.jpg' imgAlt='Women Collection'>
-								<LinkButton href='/product-category/women' extraClass='absolute bottom-10-per z-20'>
-									{t('women_collection')}
-								</LinkButton>
-							</OverlayContainer>
-						</div>
-						<div className='w-full'>
+						{collections?.slice(0, seeAllCollectiions ? collections?.length : 2)?.map((collection) => (
+							<div className='w-full'>
+								<OverlayContainer imgSrc='/bg-img/banner_minipage3.jpg' imgAlt='Women Collection'>
+									<LinkButton
+										href={'/collections/' + collection?.slug}
+										extraClass='absolute bottom-10-per z-20'
+									>
+										{collection?.name}
+									</LinkButton>
+								</OverlayContainer>
+							</div>
+						))}
+						{/* <div className='w-full'>
 							<OverlayContainer imgSrc='/bg-img/banner_minipage3.jpg' imgAlt='Men Collection'>
 								<LinkButton href='/product-category/men' extraClass='absolute bottom-10-per z-20'>
 									{t('men_collection')}
 								</LinkButton>
 							</OverlayContainer>
-						</div>
+						</div> */}
+						{collections?.length > 2 && (
+							<div className='flex justify-center'>
+								<Button
+									value={seeAllCollectiions ? t('see_less') : t('see_more')}
+									onClick={() => setAllCollection((prev) => !prev)}
+								/>
+							</div>
+						)}
 					</div>
 				</section>
 
@@ -80,10 +91,9 @@ const Home: React.FC<Props> = ({ products, category }) => {
 						</div>
 					</div>
 					<div className='grid grid-cols-2 md:grid-cols-4 gap-x-4 lg:gap-x-12 gap-y-6 mb-10 app-x-padding'>
-						<Card key={currentItems[1]?._id} item={currentItems?.[1]} />
-						<Card key={currentItems[2]?._id} item={currentItems?.[2]} />
-						<Card key={currentItems[3]?._id} item={currentItems?.[3]} />
-						<Card key={currentItems[4]?._id} item={currentItems?.[4]} />
+						{products.slice(0, 4)?.map((item) => (
+							<Card key={item._id} item={item} />
+						))}
 					</div>
 				</section>
 
@@ -97,7 +107,7 @@ const Home: React.FC<Props> = ({ products, category }) => {
 						<h2 className='text-3xl'>{t('featured_products')}</h2>
 					</div>
 					<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 sm:gap-y-6 mb-10'>
-						{currentItems.map((item) => (
+						{products.map((item) => (
 							<Card key={item._id} item={item} />
 						))}
 					</div>

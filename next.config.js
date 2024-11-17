@@ -13,7 +13,7 @@ const withPWA = require("next-pwa");
     removeConsole: true,
   },
   images: {
-    domains: ["robohash.org", "res.cloudinary.com", "i.pinimg.com", "node-ecommerce-backend-sn29.onrender.com"],
+    domains: ["robohash.org", "res.cloudinary.com", "i.pinimg.com", "node-ecommerce-backend-sn29.onrender.com", "img.drz.lazcdn.com"],
   },
   // pwa: {
   //   dest: "public",
