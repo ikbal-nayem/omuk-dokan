@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
 import UserIcon from '../../public/icons/UserIcon';
@@ -14,16 +14,17 @@ import { Menu } from './Menu';
 import TopNav from './TopNav';
 
 import { ICatrgoryTree } from '../../interface/product.interface';
+import axiosIns from '../../services/api/axios.config';
 import { COMMON_URL } from '../../utils/util';
 import styles from './Header.module.css';
 
 type Props = {
 	title?: string;
-	category: ICatrgoryTree[];
 };
 
-const Header: React.FC<Props> = ({ title, category }) => {
+const Header: React.FC<Props> = ({ title }) => {
 	const t = useTranslations('Navigation');
+	const [categoryTree, setCategoryTree] = useState<ICatrgoryTree[]>([]);
 	const { wishlist } = useWishlist();
 	const [animate, setAnimate] = useState('');
 	const [scrolled, setScrolled] = useState<boolean>(false);
@@ -46,6 +47,12 @@ const Header: React.FC<Props> = ({ title, category }) => {
 		}, 1000);
 	}, [handleAnimate]);
 
+	useEffect(() => {
+		axiosIns.get('/product-config/category-tree?isActive=true', { withCredentials: false }).then((res) => {
+			setCategoryTree(res.data.data);
+		});
+	}, []);
+
 	const handleScroll = useCallback(() => {
 		const offset = window.scrollY;
 		if (offset > 30) {
@@ -61,9 +68,8 @@ const Header: React.FC<Props> = ({ title, category }) => {
 		return () => setDidMount(false);
 	}, [handleScroll]);
 
-	if (!didMount) {
-		return null;
-	}
+	if (!didMount) return null;
+
 	return (
 		<>
 			<AppHeader title={title} />
@@ -88,12 +94,12 @@ const Header: React.FC<Props> = ({ title, category }) => {
 					<div className={`flex justify-between align-baseline app-x-padding ${styles.mainMenu}`}>
 						{/* Hamburger Menu and Mobile Nav */}
 						<div className='flex-1 lg:flex-0 lg:hidden'>
-							<Menu categoryTree={category} />
+							<Menu categoryTree={categoryTree} />
 						</div>
 
 						{/* Left Nav */}
 						<ul className={`flex-0 lg:flex-1 flex ${styles.leftMenu}`}>
-							{category?.map((c) => (
+							{categoryTree?.map((c) => (
 								<li>
 									<Link key={c._id} href={`/category/${c.slug}`}>
 										<span>{c.name}</span>

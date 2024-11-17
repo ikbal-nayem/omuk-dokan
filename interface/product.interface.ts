@@ -30,6 +30,7 @@ export interface ICollection {
 export interface IProduct {
 	_id: string;
 	name: string;
+	summary: string;
 	description: string;
 	hasVariants: boolean;
 	price: number;

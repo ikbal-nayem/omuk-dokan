@@ -1,4 +1,4 @@
-import { Disclosure } from '@headlessui/react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { useTranslations } from 'next-intl';
@@ -19,15 +19,15 @@ import InstagramLogo from '../../public/icons/InstagramLogo';
 import { Autoplay, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { apiProductsType, itemType } from '../../context/cart/cart-types';
 import { useCart } from '../../context/cart/CartProvider';
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
+import { IProduct } from '../../interface/product.interface';
 import HeartSolid from '../../public/icons/HeartSolid';
 import { COMMON_URL } from '../../utils/util';
 
 type Props = {
-	product: itemType;
-	products: itemType[];
+	product: IProduct;
+	products: IProduct[];
 };
 
 const Product: React.FC<Props> = ({ product, products }) => {
@@ -51,9 +51,9 @@ const Product: React.FC<Props> = ({ product, products }) => {
 		setSize(value);
 	};
 
-	const currentItem: itemType = {
+	const currentItem: IProduct = {
 		...product,
-		qty: currentQty,
+		stock: currentQty,
 	};
 
 	const handleWishlist = () => {
@@ -71,11 +71,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 							<Link href='/' className='text-gray400'>
 								{t('home')}
 							</Link>{' '}
-							/{' '}
-							<Link href={`/product-category/${product.categoryName}`} className='text-gray400 capitalize'>
-								{t(product.categoryName as string)}
-							</Link>{' '}
-							/ <span>{product.name}</span>
+							/ {t(product.category?.name as string)} / <span>{product?.name}</span>
 						</div>
 					</div>
 				</div>
@@ -147,7 +143,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 					<div className='infoSection w-full md:w-1/2 h-auto py-8 sm:pl-4 flex flex-col'>
 						<h1 className='text-3xl mb-4'>{product.name}</h1>
 						<span className='text-2xl text-gray400 mb-2'>$ {product.price}</span>
-						<span className='mb-2 text-justify'>{product.description}</span>
+						<span className='mb-2 text-justify' dangerouslySetInnerHTML={{ __html: product?.summary }} />
 						<span className='mb-2'>
 							{t('availability')}: {t('in_stock')}
 						</span>
@@ -215,13 +211,13 @@ const Product: React.FC<Props> = ({ product, products }) => {
 						<Disclosure>
 							{({ open }) => (
 								<>
-									<Disclosure.Button className='py-2 focus:outline-none text-left mb-4 border-b-2 border-gray200 flex items-center justify-between'>
+									<DisclosureButton className='py-2 focus:outline-none text-left mb-4 border-b-2 border-gray200 flex items-center justify-between'>
 										<span>{t('details')}</span>
 										<DownArrow extraClass={`${open ? '' : 'transform rotate-180'} w-5 h-5 text-purple-500`} />
-									</Disclosure.Button>
-									<Disclosure.Panel className={`text-gray400 animate__animated animate__bounceIn`}>
-										{product.detail}
-									</Disclosure.Panel>
+									</DisclosureButton>
+									<DisclosurePanel className={`text-gray400 animate__animated animate__bounceIn`}>
+										<div dangerouslySetInnerHTML={{ __html: product.description }} />
+									</DisclosurePanel>
 								</>
 							)}
 						</Disclosure>
@@ -273,27 +269,18 @@ const Product: React.FC<Props> = ({ product, products }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ params, locale }) => {
-	const paramId = params!.id as string;
-	const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/get/${paramId}`);
-	const fetchedProduct: apiProductsType = res.data.data;
+	const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/get/${params!.id as string}`);
+	const fetchedProduct: IProduct = res.data.data;
 
-	let product: itemType = {
-		_id: fetchedProduct._id,
-		name: fetchedProduct.name,
-		price: fetchedProduct.price,
-		detail: fetchedProduct.description,
-		img1: fetchedProduct?.images?.[0] || COMMON_URL.DUMMY_URL,
-		img2: fetchedProduct?.images?.[1] || COMMON_URL.DUMMY_URL,
-		categoryId: fetchedProduct!.category!._id,
-		categoryName: fetchedProduct!.category!.name,
-	};
+	fetchedProduct.img1 = COMMON_URL.DUMMY_URL;
+	fetchedProduct.img2 = COMMON_URL.DUMMY_URL;
 
 	// Might be temporary solution for suggested products
 	const randomProductRes = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/search`, {
-		filter: { category: product.categoryId },
+		filter: { category: fetchedProduct.category?._id },
 		meta: { limit: 5, page: 1 },
 	});
-	const fetchedProducts: apiProductsType[] = randomProductRes.data.data;
+	const fetchedProducts: IProduct[] = randomProductRes.data.data;
 
 	// Shuffle array
 	const shuffled = fetchedProducts.sort(() => 0.5 - Math.random());
@@ -301,22 +288,16 @@ export const getServerSideProps: GetServerSideProps = async ({ params, locale })
 	// Get sub-array of first 5 elements after shuffled
 	let randomFetchedProducts = shuffled.slice(0, 5);
 
-	let products: itemType[] = [];
-	randomFetchedProducts.forEach((randomProduct: apiProductsType) => {
-		products.push({
-			_id: randomProduct._id,
-			name: randomProduct.name,
-			price: randomProduct.price,
-			img1: randomProduct.images?.[0] || COMMON_URL.DUMMY_URL,
-			img2: randomProduct.images?.[1] || COMMON_URL.DUMMY_URL,
-		});
+	randomFetchedProducts.forEach((randomProduct) => {
+		randomProduct.img1 = COMMON_URL.SHIRT_IMG;
+		randomProduct.img2 = COMMON_URL.SHIRT_IMG;
 	});
 
 	// Pass data to the page via props
 	return {
 		props: {
-			product,
-			products,
+			product: fetchedProduct,
+			products: randomFetchedProducts,
 			messages: (await import(`../../locales/${locale}.json`)).default,
 		},
 	};

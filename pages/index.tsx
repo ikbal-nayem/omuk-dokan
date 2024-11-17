@@ -15,6 +15,7 @@ import TestiSlider from '../components/TestiSlider/TestiSlider';
 import { ICatrgoryTree, ICollection, IProduct } from '../interface/product.interface';
 import ourShop from '../public/bg-img/ourshop.png';
 import axiosIns from '../services/api/axios.config';
+import { COMMON_URL } from '../utils/util';
 
 type Props = {
 	category: ICatrgoryTree[];
@@ -34,7 +35,7 @@ const Home: React.FC<Props> = ({ products, category, collections }) => {
 
 	return (
 		<>
-			<Header category={category} />
+			<Header />
 			<Slideshow />
 			<main id='main-content' className='-mt-20'>
 				<section className='w-full h-auto py-10 border border-b-2 border-gray100'>
@@ -46,7 +47,7 @@ const Home: React.FC<Props> = ({ products, category, collections }) => {
 								imgAlt='New Arrivals'
 							>
 								<LinkButton
-									href='/product-category/new-arrivals'
+									href='/collections/new-arrivals'
 									extraClass='absolute bottom-10-per sm:right-10-per z-20'
 								>
 									{t('new_arrivals')}
@@ -65,13 +66,6 @@ const Home: React.FC<Props> = ({ products, category, collections }) => {
 								</OverlayContainer>
 							</div>
 						))}
-						{/* <div className='w-full'>
-							<OverlayContainer imgSrc='/bg-img/banner_minipage3.jpg' imgAlt='Men Collection'>
-								<LinkButton href='/product-category/men' extraClass='absolute bottom-10-per z-20'>
-									{t('men_collection')}
-								</LinkButton>
-							</OverlayContainer>
-						</div> */}
 						{collections?.length > 2 && (
 							<div className='flex justify-center'>
 								<Button
@@ -142,8 +136,10 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 
 	const fetchedProducts = res.data;
 	products = fetchedProducts.data.map((product: IProduct) => {
-		product.img1 = product?.images?.[0] || null;
-		product.img2 = product?.images?.[1] || null;
+		// product.img1 = product?.images?.[0] || null;
+		// product.img2 = product?.images?.[1] || null;
+		product.img1 = COMMON_URL.SHIRT_IMG;
+		product.img2 = COMMON_URL.SHIRT_IMG;
 		return product;
 	});
 
