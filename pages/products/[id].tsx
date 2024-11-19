@@ -4,7 +4,7 @@ import { GetServerSideProps } from 'next';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import Button from '../../components/Buttons/Button';
 import GhostButton from '../../components/Buttons/GhostButton';
@@ -16,7 +16,6 @@ import FacebookLogo from '../../public/icons/FacebookLogo';
 import Heart from '../../public/icons/Heart';
 import InstagramLogo from '../../public/icons/InstagramLogo';
 
-import { Autoplay, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { useCart } from '../../context/cart/CartProvider';
@@ -37,15 +36,11 @@ const Product: React.FC<Props> = ({ product, products }) => {
 	const { addItem } = useCart();
 	const { wishlist, addToWishlist, deleteWishlistItem } = useWishlist();
 	const [size, setSize] = useState('M');
-	const [mainImg, setMainImg] = useState(img1);
 	const [currentQty, setCurrentQty] = useState(1);
+	const [swiper, setSwiper] = useState<any>();
 	const t = useTranslations('Category');
 
 	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === product._id).length > 0;
-
-	useEffect(() => {
-		setMainImg(product.img1);
-	}, [product]);
 
 	const handleSize = (value: string) => {
 		setSize(value);
@@ -80,9 +75,9 @@ const Product: React.FC<Props> = ({ product, products }) => {
 						<div className='hidden sm:block w-full sm:w-1/4 h-full space-y-4 my-4'>
 							<Image
 								className={`cursor-pointer ${
-									mainImg === img1 ? 'opacity-100 border border-gray300' : 'opacity-50'
+									swiper?.activeIndex === 0 ? 'opacity-100 border border-gray300' : 'opacity-50'
 								}`}
-								onClick={() => setMainImg(img1)}
+								onClick={() => swiper?.slideTo(0)}
 								src={img1 as string}
 								alt={product.name}
 								width={1000}
@@ -90,9 +85,9 @@ const Product: React.FC<Props> = ({ product, products }) => {
 							/>
 							<Image
 								className={`cursor-pointer ${
-									mainImg === img2 ? 'opacity-100 border border-gray300' : 'opacity-50'
+									swiper?.activeIndex === 1 ? 'opacity-100 border border-gray300' : 'opacity-50'
 								}`}
-								onClick={() => setMainImg(img2)}
+								onClick={() => swiper?.slideTo(1)}
 								src={img2 as string}
 								alt={product.name}
 								width={1000}
@@ -100,16 +95,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 							/>
 						</div>
 						<div className='w-full sm:w-3/4 h-full m-0 sm:m-4'>
-							<Swiper
-								modules={[Autoplay, Pagination]}
-								slidesPerView={1}
-								spaceBetween={0}
-								// loop={true}
-								pagination={{
-									clickable: true,
-								}}
-								className='mySwiper sm:hidden'
-							>
+							<Swiper slidesPerView={1} spaceBetween={0} className='mySwiper sm:hidden' onSwiper={setSwiper}>
 								<SwiperSlide>
 									<Image
 										className='each-slide w-full'
@@ -143,9 +129,12 @@ const Product: React.FC<Props> = ({ product, products }) => {
 					<div className='infoSection w-full md:w-1/2 h-auto py-8 sm:pl-4 flex flex-col'>
 						<h1 className='text-3xl mb-4'>{product.name}</h1>
 						<span className='text-2xl text-gray400 mb-2'>$ {product.price}</span>
-						<span className='mb-2 text-justify' dangerouslySetInnerHTML={{ __html: product?.summary }} />
+						<span className='mb-2 text-justify'>{product?.summary}</span>
 						<span className='mb-2'>
-							{t('availability')}: {t('in_stock')}
+							{t('availability')}:{' '}
+							<span className={product.stock > 0 ? 'text-blue' : 'text-red'}>
+								{product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+							</span>
 						</span>
 						<span className='mb-2'>
 							{t('size')}: {size}
@@ -273,7 +262,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, locale })
 	const fetchedProduct: IProduct = res.data.data;
 
 	fetchedProduct.img1 = COMMON_URL.DUMMY_URL;
-	fetchedProduct.img2 = COMMON_URL.DUMMY_URL;
+	fetchedProduct.img2 = COMMON_URL.SHIRT_IMG;
 
 	// Might be temporary solution for suggested products
 	const randomProductRes = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/product/search`, {

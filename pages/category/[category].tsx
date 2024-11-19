@@ -1,4 +1,4 @@
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { GetServerSideProps } from 'next';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ import { IMeta } from '../../interface/common.interface';
 import { ICatrgoryTree, IProduct } from '../../interface/product.interface';
 import DownArrow from '../../public/icons/DownArrow';
 import axiosIns from '../../services/api/axios.config';
-import { toCapitalized } from '../../utils/util';
+import { COMMON_URL, toCapitalized } from '../../utils/util';
 
 type OrderType = 'latest' | 'price' | 'price-desc';
 
@@ -24,7 +24,7 @@ type Props = {
 	orderby: OrderType;
 };
 
-const ProductCategory: React.FC<Props> = ({ items, categoryTree, meta, orderby }) => {
+const ProductCategory: React.FC<Props> = ({ items, meta, orderby }) => {
 	const t = useTranslations('Category');
 
 	const router = useRouter();
@@ -36,7 +36,7 @@ const ProductCategory: React.FC<Props> = ({ items, categoryTree, meta, orderby }
 	return (
 		<div>
 			{/* ===== Head Section ===== */}
-			<Header title={`${toCapitalized(category as string)} - OD`} category={categoryTree} />
+			<Header title={`${toCapitalized(category as string)} - OD`} />
 
 			<main id='main-content'>
 				{/* ===== Breadcrumb Section ===== */}
@@ -93,16 +93,13 @@ export const getServerSideProps: GetServerSideProps = async ({
 	const res = await axiosIns.post('/product/search', reqBody);
 	const fetchedProducts = res.data.data?.map((product: apiProductsType) => ({
 		...product,
-		img1: product?.images?.[0] || null,
-		img2: product?.images?.[1] || null,
-	}));
-	const categoryRes = await axiosIns.get('/product-config/category-tree?isActive=true');
-	const category = categoryRes.data?.data;
+		img1: COMMON_URL.SHIRT_IMG,
+		img2: COMMON_URL.SHIRT_IMG,
+	}));	
 
 	return {
 		props: {
 			messages: (await import(`../../locales/${locale}.json`)).default,
-			categoryTree: category,
 			items: fetchedProducts,
 			meta: res.data?.meta,
 			orderby: 'latest',
@@ -126,11 +123,11 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
 	}
 	return (
 		<Menu as='div' className='relative'>
-			<Menu.Button as='a' href='#' className='flex items-center capitalize'>
+			<MenuButton as='a' href='#' className='flex items-center capitalize'>
 				{t(currentOrder)} <DownArrow />
-			</Menu.Button>
-			<Menu.Items className='flex flex-col z-10 items-start text-xs sm:text-sm w-auto sm:right-0 absolute p-1 border border-gray200 bg-white mt-2 outline-none'>
-				<Menu.Item>
+			</MenuButton>
+			<MenuItems className='flex flex-col z-10 items-start text-xs sm:text-sm w-auto sm:right-0 absolute p-1 border border-gray200 bg-white mt-2 outline-none'>
+				<MenuItem>
 					{({ active }) => (
 						<button
 							type='button'
@@ -144,8 +141,8 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
 							{t('sort_by_latest')}
 						</button>
 					)}
-				</Menu.Item>
-				<Menu.Item>
+				</MenuItem>
+				<MenuItem>
 					{({ active }) => (
 						<button
 							type='button'
@@ -159,8 +156,8 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
 							{t('sort_by_price')}
 						</button>
 					)}
-				</Menu.Item>
-				<Menu.Item>
+				</MenuItem>
+				<MenuItem>
 					{({ active }) => (
 						<button
 							type='button'
@@ -174,8 +171,8 @@ const SortMenu: React.FC<{ orderby: OrderType }> = ({ orderby }) => {
 							{t('sort_by_price_desc')}
 						</button>
 					)}
-				</Menu.Item>
-			</Menu.Items>
+				</MenuItem>
+			</MenuItems>
 		</Menu>
 	);
 };
