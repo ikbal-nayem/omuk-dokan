@@ -1,4 +1,4 @@
-import { IObject } from './common.interface';
+import { IObject } from "./common.interface";
 
 export interface ICatrgory {
 	_id: string;
@@ -27,11 +27,31 @@ export interface ICollection {
 	slug: string;
 }
 
+interface IVariantOption {
+	key: string;
+	value: string;
+}
+
+export interface IVariant {
+	_id?: string;
+	options: IVariantOption[];
+	sku: string;
+	stock: number;
+	price: number;
+	discountPrice?: number;
+	costPrice?: number;
+	image?: string;
+	isActive?: boolean;
+	isDeleted?: boolean;
+}
+
 export interface IProduct {
 	_id: string;
 	name: string;
 	summary: string;
 	description: string;
+	category: ICatrgoryTree;
+	collections: ICollection[];
 	hasVariants: boolean;
 	price: number;
 	discountPrice: number;
@@ -50,12 +70,10 @@ export interface IProduct {
 			values: IObject[];
 		}
 	];
-	variants: IObject[];
+	variants: IVariant[];
 	sku: string;
 	trackStock: boolean;
 	stock: number;
-	category: ICatrgoryTree;
-	collections: ICollection[];
 	tags: string[];
 	images: string[];
 	img1?: string | null;

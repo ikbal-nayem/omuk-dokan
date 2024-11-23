@@ -18,10 +18,13 @@ import InstagramLogo from '../../public/icons/InstagramLogo';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 
+import clsx from 'clsx';
 import { useCart } from '../../context/cart/CartProvider';
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
-import { IProduct } from '../../interface/product.interface';
+import { IObject } from '../../interface/common.interface';
+import { IProduct, IVariant } from '../../interface/product.interface';
 import HeartSolid from '../../public/icons/HeartSolid';
+import { isNull } from '../../utils/check-validation';
 import { COMMON_URL } from '../../utils/util';
 
 type Props = {
@@ -35,15 +38,20 @@ const Product: React.FC<Props> = ({ product, products }) => {
 
 	const { addItem } = useCart();
 	const { wishlist, addToWishlist, deleteWishlistItem } = useWishlist();
-	const [size, setSize] = useState('M');
+	const [selectedVariant, setSelectedVariant] = useState<IVariant>(product?.variants?.[0]);
 	const [currentQty, setCurrentQty] = useState(1);
 	const [swiper, setSwiper] = useState<any>();
 	const t = useTranslations('Category');
 
 	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === product._id).length > 0;
 
-	const handleSize = (value: string) => {
-		setSize(value);
+	const handleVeriantSelect = (type: string, value: string) => {
+		const sv = selectedVariant?.options?.filter((op) => op?.key !== type);
+		sv.push({ key: type, value });
+		const newSelected = product.variants.find((pv) =>
+			pv?.options?.map((o) => sv.findIndex((v) => v.key == o.key && v.value == o.value) > -1).every((v) => v)
+		);
+		setSelectedVariant(newSelected!);
 	};
 
 	const currentItem: IProduct = {
@@ -66,7 +74,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 							<Link href='/' className='text-gray400'>
 								{t('home')}
 							</Link>{' '}
-							/ {t(product.category?.name as string)} / <span>{product?.name}</span>
+							/ Category / {product.category?.name} / <span>{product?.name}</span>
 						</div>
 					</div>
 				</div>
@@ -128,49 +136,58 @@ const Product: React.FC<Props> = ({ product, products }) => {
 					</div>
 					<div className='infoSection w-full md:w-1/2 h-auto py-8 sm:pl-4 flex flex-col'>
 						<h1 className='text-3xl mb-4'>{product.name}</h1>
-						<span className='text-2xl text-gray400 mb-2'>$ {product.price}</span>
+						<span className='text-2xl text-gray400 mb-2'>
+							৳ {product.hasVariants ? selectedVariant.price : product.price}
+						</span>
 						<span className='mb-2 text-justify'>{product?.summary}</span>
 						<span className='mb-2'>
-							{t('availability')}:{' '}
-							<span className={product.stock > 0 ? 'text-blue' : 'text-red'}>
-								{product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-							</span>
+							{clsx({
+								[`⚬ Weight: ${product?.weight}${product?.weightUnit} `]: product?.weight,
+								[`⚬ Height: ${product?.height}${product?.heightUnit} `]: product?.height,
+								[`⚬ Width: ${product?.width}${product?.widthUnit}`]: product?.width,
+							})}
 						</span>
 						<span className='mb-2'>
-							{t('size')}: {size}
+							{t('availability')}:{' '}
+							<span className={'font-bold ' + (product.stock > 0 ? 'text-green' : 'text-red')}>
+								{(product.hasVariants ? selectedVariant.stock > 0 : product.stock > 0)
+									? 'In Stock'
+									: 'Out of Stock'}
+							</span>
 						</span>
-						<div className='sizeContainer flex space-x-4 text-sm mb-4'>
-							<div
-								onClick={() => handleSize('S')}
-								className={`w-8 h-8 flex items-center justify-center border ${
-									size === 'S' ? 'border-gray500' : 'border-gray300 text-gray400'
-								} cursor-pointer hover:bg-gray500 hover:text-gray100`}
-							>
-								S
-							</div>
-							<div
-								onClick={() => handleSize('M')}
-								className={`w-8 h-8 flex items-center justify-center border ${
-									size === 'M' ? 'border-gray500' : 'border-gray300 text-gray400'
-								} cursor-pointer hover:bg-gray500 hover:text-gray100`}
-							>
-								M
-							</div>
-							<div
-								onClick={() => handleSize('L')}
-								className={`w-8 h-8 flex items-center justify-center border ${
-									size === 'L' ? 'border-gray500' : 'border-gray300 text-gray400'
-								} cursor-pointer hover:bg-gray500 hover:text-gray100`}
-							>
-								L
-							</div>
-						</div>
+
+						{product?.hasVariants &&
+							product?.options?.map((op) => {
+								const sVal = selectedVariant?.options?.find((o: IObject) => o.key === op?.name)?.value;
+								return (
+									<div key={op?.name}>
+										{!isNull(selectedVariant) ? (
+											<span className='mb-2'>
+												{op?.name}: <strong>{sVal}</strong>
+											</span>
+										) : null}
+										<div className='sizeContainer flex space-x-4 text-sm mb-4'>
+											{op?.values?.map((val) => (
+												<div
+													key={val?.name}
+													onClick={() => handleVeriantSelect(op?.name, val?.name)}
+													className={`w-8 h-8 flex items-center justify-center border ${
+														sVal === val?.name ? 'border-gray500 bg-gray200' : 'border-gray300 text-gray400'
+													} cursor-pointer hover:bg-gray500 hover:text-gray100`}
+												>
+													{val?.name}
+												</div>
+											))}
+										</div>
+									</div>
+								);
+							})}
 						<div className='addToCart flex flex-col sm:flex-row md:flex-col lg:flex-row space-y-4 sm:space-y-0 mb-4'>
 							<div className='plusOrMinus h-12 flex border justify-center border-gray300 divide-x-2 divide-gray300 mb-4 mr-0 sm:mr-4 md:mr-0 lg:mr-4'>
 								<div
 									onClick={() => setCurrentQty((prevState) => prevState - 1)}
 									className={`${
-										currentQty === 1 && 'pointer-events-none'
+										currentQty === 1 && 'pointer-events-none opacity-70 bg-gray100'
 									} h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100`}
 								>
 									-
@@ -180,7 +197,12 @@ const Product: React.FC<Props> = ({ product, products }) => {
 								</div>
 								<div
 									onClick={() => setCurrentQty((prevState) => prevState + 1)}
-									className='h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100'
+									className={clsx(
+										'h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100',
+										{
+											'pointer-events-none opacity-70 bg-gray100': currentQty === product.stock,
+										}
+									)}
 								>
 									+
 								</div>
@@ -202,7 +224,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 								<>
 									<DisclosureButton className='py-2 focus:outline-none text-left mb-4 border-b-2 border-gray200 flex items-center justify-between'>
 										<span>{t('details')}</span>
-										<DownArrow extraClass={`${open ? '' : 'transform rotate-180'} w-5 h-5 text-purple-500`} />
+										<DownArrow extraClass={`${open ? 'transform rotate-180' : ''} w-5 h-5 text-purple-500`} />
 									</DisclosureButton>
 									<DisclosurePanel className={`text-gray400 animate__animated animate__bounceIn`}>
 										<div dangerouslySetInnerHTML={{ __html: product.description }} />
