@@ -1,15 +1,15 @@
 import { Dialog, Transition, TransitionChild } from '@headlessui/react';
-import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 
+import { useRouter } from 'next/router';
+import { useCart } from '../../context/cart/CartProvider';
 import BagIcon from '../../public/icons/BagIcon';
+import { isNull } from '../../utils/check-validation';
 import Button from '../Buttons/Button';
-import Item from './Item';
 import LinkButton from '../Buttons/LinkButton';
 import { roundDecimal } from '../Util/utilFunc';
-import { useCart } from '../../context/cart/CartProvider';
-import { useRouter } from 'next/router';
-import { isNull } from '../../utils/check-validation';
+import Item from './Item';
 
 export default function CartItem() {
 	const router = useRouter();
@@ -67,23 +67,23 @@ export default function CartItem() {
 				<Dialog
 					as='div'
 					className='fixed inset-0 z-10 overflow-y-auto'
-					style={{ zIndex: 99999 }}
+					style={{ zIndex: 99 }}
 					static
 					open={open}
 					onClose={closeModal}
 				>
 					<div className='min-h-screen text-right'>
-						<TransitionChild
+						{/* <TransitionChild
 							as={Fragment}
-							//   enter="ease-out duration-300"
-							//   enterFrom="opacity-0"
-							//   enterTo="opacity-100"
-							//   leave="ease-in duration-200"
-							//   leaveFrom="opacity-100"
-							//   leaveTo="opacity-0"
+							// enter='ease-out duration-300'
+							// enterFrom='opacity-0'
+							// enterTo='opacity-100'
+							// leave='ease-in duration-200'
+							// leaveFrom='opacity-100'
+							// leaveTo='opacity-0'
 						>
 							<div className='fixed inset-0 bg-gray500 opacity-50' />
-						</TransitionChild>
+						</TransitionChild> */}
 
 						{/* This element is to trick the browser into centering the modal contents. */}
 						{/* <span
@@ -105,7 +105,7 @@ export default function CartItem() {
 								style={{ height: '100vh' }}
 								className='relative inline-block dur h-screen w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl'
 							>
-								<div className='bg-lightgreen flex justify-between items-center p-6'>
+								<div className='bg-gray200 flex justify-between items-center p-6'>
 									<h3 className='text-xl'>
 										{t('cart')} ({noOfItems})
 									</h3>
@@ -125,10 +125,7 @@ export default function CartItem() {
 											return (
 												<Item
 													key={item._id}
-													name={item.name}
-													price={item.price * item.qty!}
-													qty={item.qty!}
-													img={item.img1 as string}
+													item={item}
 													onAdd={() => addOne!(item)}
 													onRemove={() => removeItem!(item)}
 													onDelete={() => deleteItem!(item)}
@@ -144,7 +141,7 @@ export default function CartItem() {
 									<div className='btnContainer mt-4 px-4 h-1/3 mb-20 w-full flex flex-col '>
 										<div className='flex justify-between'>
 											<span>{t('subtotal')}</span>
-											<span>$ {roundDecimal(subtotal)}</span>
+											<span>৳ {roundDecimal(subtotal)}</span>
 										</div>
 										<LinkButton href='/shopping-cart' extraClass='my-4' noBorder={false} inverted={false}>
 											{t('view_cart')}
