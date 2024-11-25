@@ -1,4 +1,4 @@
-import { IProduct } from '../../interface/product.interface';
+import { ICartItems } from '../../interface/order.interface';
 
 export const ADD_ITEM = 'ADD_ITEM';
 export const ADD_ONE = 'ADD_ONE';
@@ -29,21 +29,10 @@ export type commonType = {
 	};
 };
 
-export interface itemType extends commonType {
-	img1?: string;
-	img2?: string;
-	categoryName?: string;
-}
-
-export interface apiProductsType extends commonType {
-	_id: string;
-	images?: string;
-}
-
-export type cartFuncType = (item: IProduct) => void;
+export type cartFuncType = (item: ICartItems) => void;
 
 export type ICart = {
-	cart: IProduct[];
+	cart: ICartItems[];
 	addItem?: cartFuncType;
 	addOne?: cartFuncType;
 	removeItem?: cartFuncType;

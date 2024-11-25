@@ -6,11 +6,12 @@ import axios from 'axios';
 import Card from '../components/Card/Card';
 import Footer from '../components/Footer/Footer';
 import Header from '../components/Header/Header';
-import { apiProductsType, itemType } from '../context/cart/cart-types';
+import { ICartItems } from '../interface/order.interface';
+import { IProduct } from '../interface/product.interface';
 import { COMMON_URL } from '../utils/util';
 
 type Props = {
-	items: itemType[];
+	items: ICartItems[];
 	searchWord: string;
 };
 
@@ -75,14 +76,14 @@ export const getServerSideProps: GetServerSideProps = async ({ locale, query: { 
 	const res = await axios.post(`${process.env.NEXT_PUBLIC_PROD_BACKEND_URL}/product/search`, {
 		filter: { searchKey: q },
 	});
-	const fetchedProducts: apiProductsType[] = res.data.data.map((product: apiProductsType) => ({
+	const fetchedProducts: IProduct[] = res.data.data.map((product: IProduct) => ({
 		...product,
 		img1: product.images?.[0] || COMMON_URL.DUMMY_URL,
 		img2: product.images?.[1] || COMMON_URL.DUMMY_URL,
 	}));
 
-	let items: apiProductsType[] = [];
-	fetchedProducts.forEach((product: apiProductsType) => {
+	let items: IProduct[] = [];
+	fetchedProducts.forEach((product: IProduct) => {
 		items.push(product);
 	});
 

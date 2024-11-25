@@ -1,11 +1,10 @@
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, Transition, TransitionChild } from '@headlessui/react';
 import { useTranslations } from 'next-intl';
 import React, { Fragment, useEffect, useState } from 'react';
 
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { apiProductsType } from '../../context/cart/cart-types';
-import { itemType } from '../../context/wishlist/wishlist-type';
+import { IProduct } from '../../interface/product.interface';
 import Loading from '../../public/icons/Loading';
 import SearchIcon from '../../public/icons/SearchIcon';
 import { COMMON_URL } from '../../utils/util';
@@ -17,7 +16,7 @@ export default function SearchForm() {
 	const router = useRouter();
 	const [open, setOpen] = useState(false);
 	const [searchValue, setSearchValue] = useState('');
-	const [searchItems, setSearchItems] = useState<itemType[]>([]);
+	const [searchItems, setSearchItems] = useState<IProduct[]>([]);
 	const [isFetching, setIsFetching] = useState(false);
 	const [noResult, setNoResult] = useState(false);
 	const [moreThanFour, setMoreThanFour] = useState(false);
@@ -40,7 +39,7 @@ export default function SearchForm() {
 				filter: { searchKey: searchValue },
 				meta: { page: 1, limit: 10 },
 			});
-			const fetchedProducts: apiProductsType[] = res.data.data.map((product: apiProductsType) => ({
+			const fetchedProducts: IProduct[] = res.data.data.map((product: IProduct) => ({
 				...product,
 				img1: product.images?.[0] || COMMON_URL.DUMMY_URL,
 				img2: product.images?.[1] || COMMON_URL.DUMMY_URL,
@@ -88,7 +87,7 @@ export default function SearchForm() {
 					onClose={closeModal}
 				>
 					<div className='min-h-screen text-center'>
-						<Transition.Child
+						<TransitionChild
 							as={Fragment}
 							enter='ease-out duration-300'
 							enterFrom='opacity-0'
@@ -97,8 +96,8 @@ export default function SearchForm() {
 							leaveFrom='opacity-100'
 							leaveTo='opacity-0'
 						>
-							<Dialog.Overlay className='fixed inset-0 bg-gray500 opacity-50' />
-						</Transition.Child>
+							<div className='fixed inset-0 bg-gray500 opacity-50' />
+						</TransitionChild>
 
 						{/* This element is to trick the browser into centering the modal contents. */}
 						{/* <span
@@ -107,7 +106,7 @@ export default function SearchForm() {
             >
               &#8203;
             </span> */}
-						<Transition.Child
+						<TransitionChild
 							as={Fragment}
 							enter='ease-linear duration-400'
 							enterFrom='-translate-y-full'
@@ -164,7 +163,7 @@ export default function SearchForm() {
 									)}
 								</div>
 							</div>
-						</Transition.Child>
+						</TransitionChild>
 					</div>
 				</Dialog>
 			</Transition>

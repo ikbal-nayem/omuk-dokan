@@ -8,7 +8,6 @@ import Card from '../../components/Card/Card';
 import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header';
 import Pagination from '../../components/Util/Pagination';
-import { apiProductsType } from '../../context/cart/cart-types';
 import { IMeta } from '../../interface/common.interface';
 import { ICatrgoryTree, IProduct } from '../../interface/product.interface';
 import DownArrow from '../../public/icons/DownArrow';
@@ -91,11 +90,11 @@ export const getServerSideProps: GetServerSideProps = async ({
 
 	const reqBody = { filter: { categorySlug }, meta: { limit, page } };
 	const res = await axiosIns.post('/product/search', reqBody);
-	const fetchedProducts = res.data.data?.map((product: apiProductsType) => ({
+	const fetchedProducts = res.data.data?.map((product: IProduct) => ({
 		...product,
 		img1: COMMON_URL.SHIRT_IMG,
 		img2: COMMON_URL.SHIRT_IMG,
-	}));	
+	}));
 
 	return {
 		props: {

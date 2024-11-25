@@ -1,4 +1,4 @@
-import { IProduct } from "../../interface/product.interface";
+import { ICartItems } from "../../interface/order.interface";
 
 export const ADD_TO_WISHLIST = "ADD_TO_WISHLIST";
 export const DELETE_WISHLIST_ITEM = "DELETE_WISHLIST_ITEMS";
@@ -15,10 +15,10 @@ export type itemType = {
 };
 
 export type wishlistType = {
-  wishlist: IProduct[];
-  // addItem?: (item: IProduct) => void; // delete
-  addToWishlist?: (item: IProduct) => void;
-  // removeItem?: (item: IProduct) => void; // delete
-  deleteWishlistItem?: (item: IProduct) => void;
+  wishlist: ICartItems[];
+  // addItem?: (item: ICartItems) => void; // delete
+  addToWishlist?: (item: ICartItems) => void;
+  // removeItem?: (item: ICartItems) => void; // delete
+  deleteWishlistItem?: (item: ICartItems) => void;
   clearWishlist?: () => void;
 };

@@ -10,7 +10,6 @@ import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header';
 import Pagination from '../../components/Util/Pagination';
 import { PRODUCT_COLLECTION } from '../../constants/route.constanat';
-import { apiProductsType } from '../../context/cart/cart-types';
 import { IMeta } from '../../interface/common.interface';
 import { ICatrgoryTree, IProduct } from '../../interface/product.interface';
 import DownArrow from '../../public/icons/DownArrow';
@@ -21,12 +20,11 @@ type OrderType = 'latest' | 'price' | 'price-desc';
 
 type Props = {
 	items: IProduct[];
-	categoryTree: ICatrgoryTree[];
 	meta: IMeta;
 	orderby: OrderType;
 };
 
-const ProductCollection: React.FC<Props> = ({ items, categoryTree, meta, orderby }) => {
+const ProductCollection: React.FC<Props> = ({ items, meta, orderby }) => {
 	const t = useTranslations('Category');
 
 	const router = useRouter();
@@ -38,7 +36,7 @@ const ProductCollection: React.FC<Props> = ({ items, categoryTree, meta, orderby
 	return (
 		<div>
 			{/* ===== Head Section ===== */}
-			<Header title={`${toCapitalized(collection as string)} - OD`} category={categoryTree} />
+			<Header title={`${toCapitalized(collection as string)} - OD`} />
 
 			<main id='main-content'>
 				{/* ===== Breadcrumb Section ===== */}
@@ -93,19 +91,17 @@ export const getServerSideProps: GetServerSideProps = async ({
 
 	const reqBody = { filter: { collectionSlug }, meta: { limit, page } };
 	const res = await axiosIns.post('/product/search', reqBody);
-	const fetchedProducts = res.data.data?.map((product: apiProductsType) => ({
+	const fetchedProducts = res.data.data?.map((product: IProduct) => ({
 		...product,
 		// img1: product?.images?.[0] || null,
 		// img2: product?.images?.[1] || null,
 		img1: COMMON_URL.SHIRT_IMG,
 		img2: COMMON_URL.SHIRT_IMG,
 	}));
-	const categoryRes = await axiosIns.get('/product-config/category-tree?isActive=true');
 
 	return {
 		props: {
 			messages: (await import(`../../locales/${locale}.json`)).default,
-			categoryTree: categoryRes.data?.data,
 			items: fetchedProducts,
 			meta: res.data?.meta,
 			orderby: 'latest',

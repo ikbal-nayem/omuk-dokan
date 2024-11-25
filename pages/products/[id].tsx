@@ -22,6 +22,7 @@ import clsx from 'clsx';
 import { useCart } from '../../context/cart/CartProvider';
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
 import { IObject } from '../../interface/common.interface';
+import { ICartItems } from '../../interface/order.interface';
 import { IProduct, IVariant } from '../../interface/product.interface';
 import HeartSolid from '../../public/icons/HeartSolid';
 import { isNull } from '../../utils/check-validation';
@@ -43,8 +44,6 @@ const Product: React.FC<Props> = ({ product, products }) => {
 	const [swiper, setSwiper] = useState<any>();
 	const t = useTranslations('Category');
 
-	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === product._id).length > 0;
-
 	const handleVeriantSelect = (type: string, value: string) => {
 		const sv = selectedVariant?.options?.filter((op) => op?.key !== type);
 		sv.push({ key: type, value });
@@ -54,14 +53,18 @@ const Product: React.FC<Props> = ({ product, products }) => {
 		setSelectedVariant(newSelected!);
 	};
 
-	const currentItem: IProduct = {
+	const currentItem: ICartItems = {
 		...product,
+		selectedVariant,
 		stock: currentQty,
 	};
 
+	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === product._id).length > 0;
 	const handleWishlist = () => {
 		alreadyWishlisted ? deleteWishlistItem!(currentItem) : addToWishlist!(currentItem);
 	};
+
+	const isInStock = product.hasVariants ? selectedVariant.stock > 0 : product.stock > 0;
 
 	return (
 		<div>
@@ -150,9 +153,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 						<span className='mb-2'>
 							{t('availability')}:{' '}
 							<span className={'font-bold ' + (product.stock > 0 ? 'text-green' : 'text-red')}>
-								{(product.hasVariants ? selectedVariant.stock > 0 : product.stock > 0)
-									? 'In Stock'
-									: 'Out of Stock'}
+								{isInStock ? 'In Stock' : 'Out of Stock'}
 							</span>
 						</span>
 
@@ -200,7 +201,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 									className={clsx(
 										'h-full w-full sm:w-12 flex justify-center items-center cursor-pointer hover:bg-gray500 hover:text-gray100',
 										{
-											'pointer-events-none opacity-70 bg-gray100': currentQty === product.stock,
+											'pointer-events-none opacity-70 bg-gray100': currentQty === product.stock || !isInStock,
 										}
 									)}
 								>
@@ -213,6 +214,7 @@ const Product: React.FC<Props> = ({ product, products }) => {
 									size='lg'
 									extraClass={`flex-grow text-center whitespace-nowrap`}
 									onClick={() => addItem!(currentItem)}
+									disabled={!isInStock}
 								/>
 								<GhostButton onClick={handleWishlist}>
 									{alreadyWishlisted ? <HeartSolid extraClass='inline' /> : <Heart extraClass='inline' />}
