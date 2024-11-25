@@ -1,31 +1,22 @@
-import { IProduct } from '../../interface/product.interface';
+import { ICartItems } from '../../interface/order.interface';
 
-const addItemToCart = (cartItems: IProduct[], item: IProduct, add_one = false) => {
-	const duplicate = cartItems.some((cartItem) => cartItem._id === item._id);
+const addItemToCart = (cartItems: ICartItems[], item: ICartItems, add_one = false) => {
+	const cartIdx = cartItems.findIndex((cartItem) => cartItem._id === item._id);
 
-	if (duplicate) {
+	if (
+		(cartIdx > -1 && !item?.hasVariants) ||
+		(item?.hasVariants && item?.selectedVariant?._id === cartItems[cartIdx]?.selectedVariant?._id)
+	) {
 		return cartItems.map((cartItem) => {
+			if (cartItem._id !== item._id) return cartItem;
 			let itemQty = 0;
-			!item.stock || add_one ? (itemQty = cartItem.stock! + 1) : (itemQty = item.stock);
-
-			console.log(itemQty);
-			return cartItem._id === item._id ? { ...cartItem, qty: itemQty } : cartItem;
+			!item.qty || add_one ? (itemQty = cartItem.qty! + 1) : (itemQty = item.qty);
+			return { ...cartItem, qty: itemQty };
 		});
 	}
-	// console.log(itemQty);
 	let itemQty = 0;
-	!item.stock ? itemQty++ : (itemQty = item.stock);
-	return [
-		...cartItems,
-		{
-			id: item._id,
-			name: item.name,
-			price: item.price,
-			img1: item.img1,
-			img2: item.img2,
-			qty: itemQty,
-		},
-	];
+	!item.qty || add_one ? itemQty++ : (itemQty = item.qty);
+	return [...cartItems, { ...item, qty: itemQty }];
 };
 
 export default addItemToCart;

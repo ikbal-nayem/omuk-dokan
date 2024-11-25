@@ -76,7 +76,7 @@ const ShoppingCart = () => {
 									</tr>
 								) : (
 									cart.map((item) => {
-										subtotal += item.price * item.stock!;
+										subtotal += item.price * item.qty!;
 										return (
 											<tr className='border-b-2 border-gray200' key={item._id}>
 												<td className='my-3 flex flex-col xl:flex-row items-start sm:items-center xl:space-x-2 text-center xl:text-left'>
@@ -105,7 +105,7 @@ const ShoppingCart = () => {
 															-
 														</div>
 														<div className='h-full w-12 flex justify-center items-center pointer-events-none'>
-															{item.stock}
+															{item.qty}
 														</div>
 														<div
 															onClick={() => addOne!(item)}
@@ -116,7 +116,7 @@ const ShoppingCart = () => {
 													</div>
 												</td>
 												<td className='text-right text-gray400'>
-													$ {roundDecimal(item.price * item.stock!)}
+													$ {roundDecimal(item.price * item.qty!)}
 													<br />
 													<span className='text-xs'>($ {roundDecimal(item.price)})</span>
 												</td>

@@ -10,7 +10,7 @@ import {
   SET_CART,
 } from './cart-types';
 import cartReducer from './cartReducer';
-import { IProduct } from '../../interface/product.interface';
+import { ICartItems } from '../../interface/order.interface';
 
 const CartContext = createContext<ICart>({
 	cart: [],
@@ -38,28 +38,28 @@ const useProvideCart = () => {
 		setCookie('cart', state?.cart);
 	}, [state?.cart]);
 
-	const addItem = (item: IProduct) => {
+	const addItem = (item: ICartItems) => {
 		dispatch({
 			type: ADD_ITEM,
 			payload: item,
 		});
 	};
 
-	const addOne = (item: IProduct) => {
+	const addOne = (item: ICartItems) => {
 		dispatch({
 			type: ADD_ONE,
 			payload: item,
 		});
 	};
 
-	const removeItem = (item: IProduct) => {
+	const removeItem = (item: ICartItems) => {
 		dispatch({
 			type: REMOVE_ITEM,
 			payload: item,
 		});
 	};
 
-	const deleteItem = (item: IProduct) => {
+	const deleteItem = (item: ICartItems) => {
 		dispatch({
 			type: DELETE_ITEM,
 			payload: item,

@@ -1,4 +1,4 @@
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition, TransitionChild } from "@headlessui/react";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -72,7 +72,7 @@ export default function CartItem() {
           onClose={closeModal}
         >
           <div className="min-h-screen text-right">
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               //   enter="ease-out duration-300"
               //   enterFrom="opacity-0"
@@ -81,8 +81,8 @@ export default function CartItem() {
               //   leaveFrom="opacity-100"
               //   leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0 bg-gray500 opacity-50" />
-            </Transition.Child>
+              <div className="fixed inset-0 bg-gray500 opacity-50" />
+            </TransitionChild>
 
             {/* This element is to trick the browser into centering the modal contents. */}
             {/* <span
@@ -91,7 +91,7 @@ export default function CartItem() {
             >
               &#8203;
             </span> */}
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               enter="ease-linear duration-600"
               enterFrom="opacity-0"
@@ -123,7 +123,7 @@ export default function CartItem() {
                       subtotal += item.price * item.qty!;
                       return (
                         <Item
-                          key={item.id}
+                          key={item._id}
                           name={item.name}
                           price={item.price * item.qty!}
                           qty={item.qty!}
@@ -158,7 +158,7 @@ export default function CartItem() {
                   </div>
                 </div>
               </div>
-            </Transition.Child>
+            </TransitionChild>
           </div>
         </Dialog>
       </Transition>

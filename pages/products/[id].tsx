@@ -55,8 +55,8 @@ const Product: React.FC<Props> = ({ product, products }) => {
 
 	const currentItem: ICartItems = {
 		...product,
+		qty: currentQty,
 		selectedVariant,
-		stock: currentQty,
 	};
 
 	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === product._id).length > 0;
