@@ -1,16 +1,8 @@
 import { getCookie, setCookie } from 'cookies-next';
 import React, { createContext, Reducer, useContext, useEffect, useReducer } from 'react';
-import {
-  ADD_ITEM,
-  ADD_ONE,
-  CLEAR_CART,
-  DELETE_ITEM,
-  ICart,
-  REMOVE_ITEM,
-  SET_CART,
-} from './cart-types';
-import cartReducer from './cartReducer';
 import { ICartItems } from '../../interface/order.interface';
+import { ADD_ITEM, CLEAR_CART, DELETE_ITEM, ICart, REMOVE_ITEM, SET_CART } from './cart-types';
+import cartReducer from './cartReducer';
 
 const CartContext = createContext<ICart>({
 	cart: [],
@@ -46,13 +38,15 @@ const useProvideCart = () => {
 	};
 
 	const addOne = (item: ICartItems) => {
+		item.qty = item.qty ? item.qty + 1 : 1;
 		dispatch({
-			type: ADD_ONE,
+			type: ADD_ITEM,
 			payload: item,
 		});
 	};
 
 	const removeItem = (item: ICartItems) => {
+		item.qty = item.qty - 1;
 		dispatch({
 			type: REMOVE_ITEM,
 			payload: item,

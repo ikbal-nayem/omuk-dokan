@@ -1,13 +1,26 @@
 import { ICartItems } from '../../interface/order.interface';
 
-const removeItemFromCart = (cartItems: ICartItems[], item: ICartItems) => {
-	//   const duplicate = cartItems.some((cartItem) => cartItem.id === item.id);
-	if (item.qty === 1) {
-		return cartItems.filter((cartItem) => cartItem._id !== item._id);
-	}
-	return cartItems.map((cartItem) =>
-		cartItem._id === item._id ? { ...cartItem, qty: cartItem.qty! - 1 } : cartItem
+export const removeItemFromCart = (cartItems: ICartItems[], item: ICartItems) => {
+	const cartIdx = cartItems.findIndex((cartItem) =>
+		item?.hasVariants
+			? cartItem._id === item._id && cartItem.selectedVariant?._id === item.selectedVariant?._id
+			: cartItem._id === item._id
 	);
+
+	if (item.qty <= 1) {
+		cartItems.splice(cartIdx, 1);
+		return cartItems;
+	}
+	cartItems[cartIdx].qty = item.qty || 0;
+	return [...cartItems];
 };
 
-export default removeItemFromCart;
+export const deleteItemFromCart = (cartItems: ICartItems[], item: ICartItems) => {
+	const cartIdx = cartItems.findIndex((cartItem) =>
+		item?.hasVariants
+			? cartItem._id === item._id && cartItem.selectedVariant?._id === item.selectedVariant?._id
+			: cartItem._id === item._id
+	);
+	cartItems.splice(cartIdx, 1);
+	return cartItems;
+};
