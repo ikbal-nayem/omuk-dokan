@@ -1,4 +1,4 @@
-import { Dialog, Menu as HMenu, Transition } from '@headlessui/react';
+import { Dialog, Menu as HMenu, Transition, TransitionChild } from '@headlessui/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -69,10 +69,10 @@ export const Menu = ({ categoryTree }: Props) => {
 					onClose={closeModal}
 				>
 					<div className='min-h-screen'>
-						<Transition.Child as={Fragment}>
-							<Dialog.Overlay className='fixed inset-0 bg-gray500 opacity-50' />
-						</Transition.Child>
-						<Transition.Child
+						<TransitionChild as={Fragment}>
+							<div className='fixed inset-0 bg-gray500 opacity-50' />
+						</TransitionChild>
+						<TransitionChild
 							as={Fragment}
 							enter='ease-linear duration-600'
 							enterFrom='opacity-0'
@@ -261,7 +261,7 @@ export const Menu = ({ categoryTree }: Props) => {
 									</div>
 								</div>
 							</div>
-						</Transition.Child>
+						</TransitionChild>
 					</div>
 				</Dialog>
 			</Transition>

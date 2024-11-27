@@ -7,7 +7,7 @@ module.exports = {
 		defaultLocale: 'en',
 		localeDetection: false,
 	},
-	reactStrictMode: true,
+	reactStrictMode: false,
 	// swcMinify: true,
 	// compiler: {
 	// 	removeConsole: true,

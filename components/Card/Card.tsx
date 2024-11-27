@@ -5,6 +5,7 @@ import { FC, useState } from 'react';
 
 import { useCart } from '../../context/cart/CartProvider';
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
+import { ICartItems } from '../../interface/order.interface';
 import { IProduct } from '../../interface/product.interface';
 import Heart from '../../public/icons/Heart';
 import HeartSolid from '../../public/icons/HeartSolid';
@@ -26,8 +27,10 @@ const Card: FC<Props> = ({ item }) => {
 
 	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === item?._id).length > 0;
 
+	const cartItem: ICartItems = { ...item, selectedVariant: item?.variants?.[0], qty: 1 };
+
 	const handleWishlist = () => {
-		alreadyWishlisted ? deleteWishlistItem!(item) : addToWishlist!(item);
+		alreadyWishlisted ? deleteWishlistItem!(cartItem) : addToWishlist!(cartItem);
 	};
 
 	return (
@@ -60,7 +63,7 @@ const Card: FC<Props> = ({ item }) => {
 				>
 					{isWLHovered || alreadyWishlisted ? <HeartSolid /> : <Heart />}
 				</button>
-				<button type='button' onClick={() => addOne!(item)} className={styles.addBtn}>
+				<button type='button' onClick={() => addOne!(cartItem)} className={styles.addBtn}>
 					{t('add_to_cart')}
 				</button>
 			</div>
@@ -70,7 +73,7 @@ const Card: FC<Props> = ({ item }) => {
 					<span className={styles.itemName}>{item?.name}</span>
 				</Link>
 				<div className='text-gray400'>৳ {item?.price}</div>
-				<button type='button' onClick={() => addOne!(item)} className='uppercase font-bold text-sm sm:hidden'>
+				<button type='button' onClick={() => addOne!(cartItem)} className='uppercase font-bold text-sm sm:hidden'>
 					{t('add_to_cart')}
 				</button>
 			</div>
