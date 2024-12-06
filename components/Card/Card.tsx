@@ -27,7 +27,7 @@ const Card: FC<Props> = ({ item }) => {
 
 	const alreadyWishlisted = wishlist.filter((wItem) => wItem._id === item?._id).length > 0;
 
-	const cartItem: ICartItems = { ...item, selectedVariant: item?.variants?.[0], qty: 1 };
+	const cartItem: ICartItems = { ...item, selectedVariant: item?.variants?.[0], qty: 0 };
 
 	const handleWishlist = () => {
 		alreadyWishlisted ? deleteWishlistItem!(cartItem) : addToWishlist!(cartItem);

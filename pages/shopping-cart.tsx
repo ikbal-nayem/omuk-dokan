@@ -9,29 +9,24 @@ import Button from '../components/Buttons/Button';
 import GhostButton from '../components/Buttons/GhostButton';
 import Footer from '../components/Footer/Footer';
 import Header from '../components/Header/Header';
+import { deliveryOptions } from '../components/Util/temp-data';
 import { roundDecimal } from '../components/Util/utilFunc';
 import { useCart } from '../context/cart/CartProvider';
 import LeftArrow from '../public/icons/LeftArrow';
+import { isNull } from '../utils/check-validation';
 
 const ShoppingCart = () => {
 	const t = useTranslations('CartWishlist');
 	const router = useRouter();
-	const [deli, setDeli] = useState('Pickup');
+	const [dOption, setDOption] = useState(deliveryOptions[0]);
 	const { cart, addOne, removeItem, deleteItem, clearCart } = useCart();
 
 	let subtotal = 0;
 
-	let deliFee = 0;
-	if (deli === 'Yangon') {
-		deliFee = 2.0;
-	} else if (deli === 'Others') {
-		deliFee = 7.0;
-	}
-
 	return (
 		<div>
 			{/* ===== Head Section ===== */}
-			<Header title={`Shopping Cart - Omuk Dokan`} />
+			<Header title={`Shopping Cart - OD`} />
 
 			<main id='main-content'>
 				{/* ===== Heading & Continue Shopping */}
@@ -91,10 +86,20 @@ const ShoppingCart = () => {
 															/>
 														</span>
 													</Link>
-													<span>{item.name}</span>
+													<div>
+														<span>{item.name}</span>
+														<br />
+														{item?.hasVariants && (
+															<small>
+																{item?.selectedVariant?.options
+																	?.map((op) => op.key + ': ' + op.value)
+																	.join(', ')}
+															</small>
+														)}
+													</div>
 												</td>
 												<td className='text-right text-gray400 hidden sm:table-cell'>
-													$ {roundDecimal(item.price)}
+													৳ {roundDecimal(item.price)}
 												</td>
 												<td>
 													<div className='w-12 h-32 sm:h-auto sm:w-3/4 md:w-2/6 mx-auto flex flex-col-reverse sm:flex-row border border-gray300 sm:divide-x-2 divide-gray300'>
@@ -116,9 +121,9 @@ const ShoppingCart = () => {
 													</div>
 												</td>
 												<td className='text-right text-gray400'>
-													$ {roundDecimal(item.price * item.qty!)}
+													৳ {roundDecimal(item.price * item.qty!)}
 													<br />
-													<span className='text-xs'>($ {roundDecimal(item.price)})</span>
+													<span className='text-xs'>(৳ {roundDecimal(item.price)})</span>
 												</td>
 												<td className='text-right' style={{ minWidth: '3rem' }}>
 													<button
@@ -135,11 +140,13 @@ const ShoppingCart = () => {
 								)}
 							</tbody>
 						</table>
-						<div>
-							<GhostButton onClick={clearCart} extraClass='hidden sm:inline-block'>
-								{t('clear_cart')}
-							</GhostButton>
-						</div>
+						{!isNull(cart) && (
+							<div>
+								<GhostButton onClick={clearCart} extraClass='hidden sm:inline-block'>
+									{t('clear_cart')}
+								</GhostButton>
+							</div>
+						)}
 					</div>
 					<div className='h-full w-full lg:w-4/12 mt-10 lg:mt-0'>
 						{/* Cart Totals */}
@@ -147,70 +154,40 @@ const ShoppingCart = () => {
 							<h2 className='text-xl mb-3'>{t('cart_totals')}</h2>
 							<div className='flex justify-between py-2'>
 								<span className='uppercase'>{t('subtotal')}</span>
-								<span>$ {roundDecimal(subtotal)}</span>
+								<span>৳ {subtotal?.toFixed(2)}</span>
 							</div>
 							<div className='py-3'>
 								<span className='uppercase'>{t('delivery')}</span>
 								<div className='mt-3 space-y-2'>
-									<div className='flex justify-between'>
-										<div>
-											<input
-												type='radio'
-												name='deli'
-												value='Pickup'
-												id='pickup'
-												checked={deli === 'Pickup'}
-												onChange={() => setDeli('Pickup')}
-											/>
-											<label htmlFor='pickup' className='cursor-pointer'>
-												{t('store_pickup')}
-											</label>
+									{deliveryOptions.map((option) => (
+										<div className='flex justify-between'>
+											<div className='space-x-2'>
+												<input
+													type='radio'
+													name={option.code}
+													value={option?.code}
+													id={option?.code}
+													checked={dOption.code === option.code}
+													onChange={() => setDOption(option)}
+												/>
+												<label htmlFor={option.code} className='cursor-pointer'>
+													{option.title}
+												</label>
+											</div>
+											<span>{option?.charge || 0}</span>
 										</div>
-										<span>{t('free')}</span>
-									</div>
-									<div className='flex justify-between'>
-										<div>
-											<input
-												type='radio'
-												name='deli'
-												value='Yangon'
-												id='ygn'
-												checked={deli === 'Yangon'}
-												onChange={() => setDeli('Yangon')}
-											/>
-											<label htmlFor='ygn' className='cursor-pointer'>
-												{t('within_yangon')}
-											</label>
-										</div>
-										<span>$ 2.00</span>
-									</div>
-									<div className='flex justify-between'>
-										<div>
-											<input
-												type='radio'
-												name='deli'
-												value='Others'
-												id='others'
-												checked={deli === 'Others'}
-												onChange={() => setDeli('Others')}
-											/>{' '}
-											<label htmlFor='others' className='cursor-pointer'>
-												{t('other_cities')}
-											</label>
-										</div>
-										<span>$ 7.00</span>
-									</div>
+									))}
 								</div>
 							</div>
 							<div className='flex justify-between py-3'>
 								<span>{t('grand_total')}</span>
-								<span>$ {roundDecimal(subtotal + deliFee)}</span>
+								<span>৳ {(subtotal + dOption.charge).toFixed(2)}</span>
 							</div>
 							<Button
 								value={t('proceed_to_checkout')}
 								size='xl'
 								extraClass='w-full'
-								onClick={() => router.push(`/checkout`)}
+								onClick={() => router.push({ pathname: '/checkout', query: { deliveryOp: dOption.code } })}
 								disabled={cart.length < 1 ? true : false}
 							/>
 						</div>
