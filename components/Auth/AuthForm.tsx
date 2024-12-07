@@ -2,7 +2,7 @@ import { Dialog, DialogTitle, Transition, TransitionChild } from '@headlessui/re
 import { useTranslations } from 'next-intl';
 import { FC, Fragment, useState } from 'react';
 
-import { useAuth } from '../../context/auth.context';
+import { useAuth } from '@/context/auth.context';
 import Button from '../Buttons/Button';
 import ForgotPassword from './ForgotPassword';
 import Login from './Login';

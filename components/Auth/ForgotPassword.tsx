@@ -48,8 +48,7 @@ const ForgotPassword: React.FC<Props> = ({
           placeholder={`${t("email_address")} *`}
           name="email"
           required
-          extraClass="w-full focus:border-gray500"
-          border="border-2 border-gray300 mb-4"
+          className="mb-4 focus:border-gray500"
           onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
           value={email}
         />
