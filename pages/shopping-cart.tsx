@@ -10,7 +10,7 @@ import GhostButton from '../components/Buttons/GhostButton';
 import Footer from '../components/Footer/Footer';
 import Header from '../components/Header/Header';
 import { deliveryOptions } from '../components/Util/temp-data';
-import { roundDecimal } from '../components/Util/utilFunc';
+import { useApp } from '../context/App/app.context';
 import { useCart } from '../context/cart/CartProvider';
 import LeftArrow from '../public/icons/LeftArrow';
 import { isNull } from '../utils/check-validation';
@@ -19,7 +19,13 @@ const ShoppingCart = () => {
 	const t = useTranslations('CartWishlist');
 	const router = useRouter();
 	const [dOption, setDOption] = useState(deliveryOptions[0]);
+	const { dispatchApp } = useApp();
 	const { cart, addOne, removeItem, deleteItem, clearCart } = useCart();
+
+	const goToCheckout = () => {
+		dispatchApp({ type: 'SET_DELIVERY_OPTION', payload: dOption });
+		router.push({ pathname: '/checkout' });
+	};
 
 	let subtotal = 0;
 
@@ -99,7 +105,7 @@ const ShoppingCart = () => {
 													</div>
 												</td>
 												<td className='text-right text-gray400 hidden sm:table-cell'>
-													৳ {roundDecimal(item.price)}
+													৳ {item.price.toFixed(2)}
 												</td>
 												<td>
 													<div className='w-12 h-32 sm:h-auto sm:w-3/4 md:w-2/6 mx-auto flex flex-col-reverse sm:flex-row border border-gray300 sm:divide-x-2 divide-gray300'>
@@ -121,9 +127,9 @@ const ShoppingCart = () => {
 													</div>
 												</td>
 												<td className='text-right text-gray400'>
-													৳ {roundDecimal(item.price * item.qty!)}
+													৳ {(item.price * item.qty!).toFixed(2)}
 													<br />
-													<span className='text-xs'>(৳ {roundDecimal(item.price)})</span>
+													<span className='text-xs'>(৳ {item.price.toFixed(2)})</span>
 												</td>
 												<td className='text-right' style={{ minWidth: '3rem' }}>
 													<button
@@ -160,7 +166,7 @@ const ShoppingCart = () => {
 								<span className='uppercase'>{t('delivery')}</span>
 								<div className='mt-3 space-y-2'>
 									{deliveryOptions.map((option) => (
-										<div className='flex justify-between'>
+										<div className='flex justify-between' key={option.code}>
 											<div className='space-x-2'>
 												<input
 													type='radio'
@@ -187,7 +193,7 @@ const ShoppingCart = () => {
 								value={t('proceed_to_checkout')}
 								size='xl'
 								extraClass='w-full'
-								onClick={() => router.push({ pathname: '/checkout', query: { deliveryOp: dOption.code } })}
+								onClick={goToCheckout}
 								disabled={cart.length < 1 ? true : false}
 							/>
 						</div>

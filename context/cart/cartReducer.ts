@@ -1,7 +1,7 @@
 import { ICartItems } from '../../interface/order.interface';
 import addItemToCart from '../Util/addItemToCart';
 import { deleteItemFromCart, removeItemFromCart } from '../Util/removeItemFromCart';
-import { ADD_ITEM, ADD_ONE, CLEAR_CART, DELETE_ITEM, ICart, REMOVE_ITEM, SET_CART } from './cart-types';
+import { ADD_ITEM, CLEAR_CART, DELETE_ITEM, ICart, REMOVE_ITEM, SET_CART } from './cart-types';
 
 type actionType = {
 	type: string;

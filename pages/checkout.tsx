@@ -8,7 +8,8 @@ import Button from '../components/Buttons/Button';
 import Footer from '../components/Footer/Footer';
 import Header from '../components/Header/Header';
 import Input from '../components/Input/Input';
-import { roundDecimal } from '../components/Util/utilFunc';
+import { deliveryOptions } from '../components/Util/temp-data';
+import { useApp } from '../context/App/app.context';
 import { useAuth } from '../context/auth.context';
 import { useCart } from '../context/cart/CartProvider';
 import { ICartItems } from '../interface/order.interface';
@@ -36,7 +37,7 @@ const ShoppingCart = () => {
 	const t = useTranslations('CartWishlist');
 	const { cart, clearCart } = useCart();
 	const auth = useAuth();
-	const [deli, setDeli] = useState<DeliveryType>('STORE_PICKUP');
+	const { deliveryOption, dispatchApp } = useApp();
 	const [paymentMethod, setPaymentMethod] = useState<PaymentType>('CASH_ON_DELIVERY');
 
 	// Form Fields
@@ -85,7 +86,7 @@ const ShoppingCart = () => {
 				totalPrice: subtotal,
 				deliveryDate: new Date().setDate(new Date().getDate() + 7),
 				paymentType: paymentMethod,
-				deliveryType: deli,
+				deliveryType: deliveryOption,
 				products,
 				sendEmail,
 			});
@@ -125,19 +126,12 @@ const ShoppingCart = () => {
 
 	let subtotal: number | string = 0;
 
-	subtotal = roundDecimal(
-		cart.reduce(
+	subtotal = cart
+		.reduce(
 			(accumulator: number, currentItem: ICartItems) => accumulator + currentItem.price * currentItem!.qty!,
 			0
 		)
-	);
-
-	let deliFee = 0;
-	if (deli === 'YANGON') {
-		deliFee = 2.0;
-	} else if (deli === 'OTHERS') {
-		deliFee = 7.0;
-	}
+		.toFixed(2);
 
 	return (
 		<div>
@@ -283,75 +277,44 @@ const ShoppingCart = () => {
 											<span className='text-base font-medium'>
 												{item.name} <span className='text-gray400'>x {item.qty}</span>
 											</span>
-											<span className='text-base'>$ {roundDecimal(item.price * item!.qty!)}</span>
+											<span className='text-base'>৳ {(item.price * item!.qty!).toFixed(2)}</span>
 										</div>
 									))}
 								</div>
 
 								<div className='py-3 flex justify-between'>
 									<span className='uppercase'>{t('subtotal')}</span>
-									<span>$ {subtotal}</span>
+									<span>৳ {subtotal}</span>
 								</div>
 
 								<div className='py-3'>
 									<span className='uppercase'>{t('delivery')}</span>
 									<div className='mt-3 space-y-2'>
-										<div className='flex justify-between'>
-											<div>
-												<input
-													type='radio'
-													name='deli'
-													value='STORE_PICKUP'
-													id='pickup'
-													checked={deli === 'STORE_PICKUP'}
-													onChange={() => setDeli('STORE_PICKUP')}
-												/>{' '}
-												<label htmlFor='pickup' className='cursor-pointer'>
-													{t('store_pickup')}
-												</label>
+										{deliveryOptions.map((option) => (
+											<div className='flex justify-between' key={option.code}>
+												<div className='space-x-2'>
+													<input
+														type='radio'
+														name={option.code}
+														value={option?.code}
+														id={option?.code}
+														checked={deliveryOption.code === option.code}
+														onChange={() => dispatchApp({ type: 'SET_DELIVERY_OPTION', payload: option })}
+													/>
+													<label htmlFor={option.code} className='cursor-pointer'>
+														{option.title}
+													</label>
+												</div>
+												<span>{option?.charge || 0}</span>
 											</div>
-											<span>Free</span>
-										</div>
-										<div className='flex justify-between'>
-											<div>
-												<input
-													type='radio'
-													name='deli'
-													value='YANGON'
-													id='ygn'
-													checked={deli === 'YANGON'}
-													onChange={() => setDeli('YANGON')}
-													// defaultChecked
-												/>{' '}
-												<label htmlFor='ygn' className='cursor-pointer'>
-													{t('within_yangon')}
-												</label>
-											</div>
-											<span>$ 2.00</span>
-										</div>
-										<div className='flex justify-between'>
-											<div>
-												<input
-													type='radio'
-													name='deli'
-													value='OTHERS'
-													id='others'
-													checked={deli === 'OTHERS'}
-													onChange={() => setDeli('OTHERS')}
-												/>{' '}
-												<label htmlFor='others' className='cursor-pointer'>
-													{t('other_cities')}
-												</label>
-											</div>
-											<span>$ 7.00</span>
-										</div>
+										))}
 									</div>
 								</div>
 
 								<div>
 									<div className='flex justify-between py-3'>
 										<span>{t('grand_total')}</span>
-										<span>$ {roundDecimal(+subtotal + deliFee)}</span>
+										<span>৳ {(+subtotal + deliveryOption.charge).toFixed(2)}</span>
 									</div>
 
 									<div className='grid gap-4 mt-2 mb-4'>
@@ -509,7 +472,7 @@ const ShoppingCart = () => {
 
 									<div className='pt-2 flex justify-between mb-2'>
 										<span className='text-base uppercase'>{t('total')}</span>
-										<span className='text-base'>$ {completedOrder.totalPrice}</span>
+										<span className='text-base'>৳ {completedOrder.totalPrice}</span>
 									</div>
 								</div>
 							</div>

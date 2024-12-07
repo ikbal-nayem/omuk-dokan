@@ -1,4 +1,3 @@
-import { getCookie, setCookie } from 'cookies-next';
 import React, { createContext, Reducer, useContext, useEffect, useReducer } from 'react';
 import { ICartItems } from '../../interface/order.interface';
 import { ADD_ITEM, CLEAR_CART, DELETE_ITEM, ICart, REMOVE_ITEM, SET_CART } from './cart-types';
@@ -19,7 +18,7 @@ const useProvideCart = () => {
 	const [state, dispatch] = useReducer<Reducer<any, any>>(cartReducer, { cart: [] });
 
 	useEffect(() => {
-		const initialCart = getCookie('cart');
+		const initialCart = localStorage.getItem('cart');
 		if (initialCart) {
 			const cartItems = JSON.parse(initialCart as string);
 			dispatch({ type: SET_CART, payload: cartItems });
@@ -27,7 +26,7 @@ const useProvideCart = () => {
 	}, []);
 
 	useEffect(() => {
-		setCookie('cart', state?.cart);
+		localStorage.setItem('cart', JSON.stringify(state?.cart));
 	}, [state?.cart]);
 
 	const addItem = (item: ICartItems) => {

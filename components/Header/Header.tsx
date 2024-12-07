@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useWishlist } from '../../context/wishlist/WishlistProvider';
 import UserIcon from '../../public/icons/UserIcon';

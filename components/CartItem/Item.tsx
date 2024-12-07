@@ -1,6 +1,5 @@
 import Image from 'next/image';
-import React, { FC } from 'react';
-import { roundDecimal } from '../Util/utilFunc';
+import { FC } from 'react';
 import { ICartItems } from '../../interface/order.interface';
 
 type Props = {
@@ -45,7 +44,7 @@ const Item: FC<Props> = ({ item, onAdd, onRemove, onDelete }) => {
 				>
 					&#10005;
 				</button>
-				<span>৳ {roundDecimal(item?.price)}</span>
+				<span>৳ {item?.price?.toFixed(2)}</span>
 			</div>
 		</div>
 	);

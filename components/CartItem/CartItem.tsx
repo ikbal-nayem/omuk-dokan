@@ -8,7 +8,6 @@ import BagIcon from '../../public/icons/BagIcon';
 import { isNull } from '../../utils/check-validation';
 import Button from '../Buttons/Button';
 import LinkButton from '../Buttons/LinkButton';
-import { roundDecimal } from '../Util/utilFunc';
 import Item from './Item';
 
 export default function CartItem() {
@@ -141,7 +140,7 @@ export default function CartItem() {
 									<div className='btnContainer mt-4 px-4 h-1/3 mb-20 w-full flex flex-col '>
 										<div className='flex justify-between'>
 											<span>{t('subtotal')}</span>
-											<span>৳ {roundDecimal(subtotal)}</span>
+											<span>৳ {subtotal.toFixed(2)}</span>
 										</div>
 										<LinkButton href='/shopping-cart' extraClass='my-4' noBorder={false} inverted={false}>
 											{t('view_cart')}
