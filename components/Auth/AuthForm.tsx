@@ -21,7 +21,6 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
 	const [open, setOpen] = useState(false);
 	const [errorMsg, setErrorMsg] = useState('');
 	const [successMsg, setSuccessMsg] = useState('');
-	const t = useTranslations('LoginRegister');
 
 	let modalBox: JSX.Element;
 	if (auth.user) {

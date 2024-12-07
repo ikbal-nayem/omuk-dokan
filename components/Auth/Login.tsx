@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Dialog } from "@headlessui/react";
+import { DialogTitle } from "@headlessui/react";
 import { useTranslations } from "next-intl";
 
-import { useAuth } from "../../context/auth.context";
+import { useAuth } from "@/context/auth.context";
 import Button from "../Buttons/Button";
 import Input from "../Input/Input";
 
@@ -38,12 +38,12 @@ const Login: React.FC<Props> = ({
 
   return (
     <>
-      <Dialog.Title
+      <DialogTitle
         as="h3"
         className="text-4xl text-center my-8 font-medium leading-6 text-gray-900"
       >
         {t("login")}
-      </Dialog.Title>
+      </DialogTitle>
       <form onSubmit={handleSubmit} className="mt-2">
         <Input
           type="email"
@@ -84,7 +84,7 @@ const Login: React.FC<Props> = ({
           </div>
           <span
             onClick={onForgotPassword}
-            className="text-gray400 text-sm hover:text-gray500 focus:outline-none focus:text-gray500"
+            className="text-gray400 text-sm hover:text-gray500 focus:outline-none focus:text-gray500 cursor-pointer"
           >
             {t("forgot_password")}
           </span>
@@ -99,7 +99,7 @@ const Login: React.FC<Props> = ({
           {t("not_member")}{" "}
           <span
             onClick={onRegister}
-            className="text-gray500 focus:outline-none focus:underline cursor-pointer"
+            className="text-gray500 focus:outline-none focus:underline hover:underline cursor-pointer"
           >
             {t("register")}
           </span>

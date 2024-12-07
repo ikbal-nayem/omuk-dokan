@@ -1,10 +1,10 @@
-import React, { FormEvent, useState } from "react";
-import { Dialog } from "@headlessui/react";
+import { DialogTitle } from "@headlessui/react";
 import { useTranslations } from "next-intl";
+import React, { useState } from "react";
 
+import { useAuth } from "../../context/auth.context";
 import Button from "../Buttons/Button";
 import Input from "../Input/Input";
-import { useAuth } from "../../context/auth.context";
 
 type Props = {
   onLogin: () => void;
@@ -51,12 +51,12 @@ const Register: React.FC<Props> = ({
 
   return (
     <>
-      <Dialog.Title
+      <DialogTitle
         as="h3"
         className="text-4xl text-center my-8 font-medium leading-6 text-gray-900"
       >
         {t("register")}
-      </Dialog.Title>
+      </DialogTitle>
       <form onSubmit={handleSubmit} className="mt-2">
         <Input
           type="name"
@@ -124,7 +124,7 @@ const Register: React.FC<Props> = ({
           {t("already_member")}{" "}
           <span
             onClick={onLogin}
-            className="text-gray500 focus:outline-none focus:underline cursor-pointer"
+            className="text-gray500 focus:outline-none focus:underline cursor-pointer hover:underline"
           >
             {t("login")}
           </span>

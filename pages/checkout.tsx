@@ -4,15 +4,17 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
-import Button from '../components/Buttons/Button';
-import Footer from '../components/Footer/Footer';
-import Header from '../components/Header/Header';
-import Input from '../components/Input/Input';
+import AuthForm from '@/components/Auth/AuthForm';
+import Button from '@/components/Buttons/Button';
+import Footer from '@/components/Footer/Footer';
+import Header from '@/components/Header/Header';
+import Input from '@/components/Input/Input';
+import { useApp } from '@/context/App/app.context';
+import { useAuth } from '@/context/auth.context';
+import { useCart } from '@/context/cart/CartProvider';
+import { ICartItems } from '@/interface/order.interface';
+import { isNull } from '@/utils/check-validation';
 import { deliveryOptions } from '../components/Util/temp-data';
-import { useApp } from '../context/App/app.context';
-import { useAuth } from '../context/auth.context';
-import { useCart } from '../context/cart/CartProvider';
-import { ICartItems } from '../interface/order.interface';
 
 // let w = window.innerWidth;
 type PaymentType = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER';
@@ -35,6 +37,7 @@ type Order = {
 
 const ShoppingCart = () => {
 	const t = useTranslations('CartWishlist');
+	const a = useTranslations('LoginRegister');
 	const { cart, clearCart } = useCart();
 	const auth = useAuth();
 	const { deliveryOption, dispatchApp } = useApp();
@@ -136,7 +139,7 @@ const ShoppingCart = () => {
 	return (
 		<div>
 			{/* ===== Head Section ===== */}
-			<Header title={`Shopping Cart - Omuk Dokan`} />
+			<Header title={`Checkout - OD`} />
 
 			<main id='main-content'>
 				{/* ===== Heading & Continue Shopping */}
@@ -144,6 +147,16 @@ const ShoppingCart = () => {
 					<h1 className='text-2xl sm:text-4xl text-center sm:text-left mt-6 mb-2 animatee__animated animate__bounce'>
 						{t('checkout')}
 					</h1>
+					{isNull(auth.user) && (
+						<span className='flex'>
+							{a('already_member')}
+							<AuthForm>
+								<span className='ml-2 text-gray500 hover:text-gray400 hover:underline focus:outline-none focus:underline cursor-pointer'>
+									{a('login')}
+								</span>
+							</AuthForm>
+						</span>
+					)}
 				</div>
 
 				{/* ===== Form Section ===== */}
@@ -153,7 +166,7 @@ const ShoppingCart = () => {
 							{errorMsg !== '' && <span className='text-red text-sm font-semibold'>- {t(errorMsg)}</span>}
 							<div className='my-4'>
 								<label htmlFor='name' className='text-lg'>
-									{t('name')}
+									{a('name')}
 								</label>
 								<Input
 									name='name'
@@ -168,7 +181,7 @@ const ShoppingCart = () => {
 
 							<div className='my-4'>
 								<label htmlFor='email' className='text-lg mb-1'>
-									{t('email_address')}
+									{a('email_address')}
 								</label>
 								<Input
 									name='email'
@@ -185,7 +198,7 @@ const ShoppingCart = () => {
 							{!auth.user && (
 								<div className='my-4'>
 									<label htmlFor='password' className='text-lg'>
-										{t('password')}
+										{a('password')}
 									</label>
 									<Input
 										name='password'
@@ -201,7 +214,7 @@ const ShoppingCart = () => {
 
 							<div className='my-4'>
 								<label htmlFor='phone' className='text-lg'>
-									{t('phone')}
+									{a('phone')}
 								</label>
 								<Input
 									name='phone'
