@@ -4,7 +4,10 @@ import React from 'react';
 
 import { IObject } from '@/interface/common.interface';
 import { isValidEmail, isValidMobileNo } from '@/utils/check-validation';
+import nProgress from 'nprogress';
 import { useForm } from 'react-hook-form';
+import axiosIns from 'services/api/axios.config';
+import { toast } from 'services/utils/toastr.service';
 import { useAuth } from '../../context/auth.context';
 import Button from '../Buttons/Button';
 import Input from '../Input/Input';
@@ -13,11 +16,10 @@ type Props = {
 	onLogin: () => void;
 	errorMsg: string;
 	setErrorMsg: React.Dispatch<React.SetStateAction<string>>;
-	setSuccessMsg: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const Register: React.FC<Props> = ({ onLogin, errorMsg, setErrorMsg, setSuccessMsg }) => {
-	const auth = useAuth();
+const Register: React.FC<Props> = ({ onLogin, errorMsg, setErrorMsg }) => {
+	const { setAuthUser } = useAuth();
 	const {
 		register,
 		handleSubmit,
@@ -25,25 +27,17 @@ const Register: React.FC<Props> = ({ onLogin, errorMsg, setErrorMsg, setSuccessM
 	} = useForm();
 	const t = useTranslations('LoginRegister');
 
-	// const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-	// 	e.preventDefault();
-	// 	const regResponse = await auth.register!(email, name, password, address, phone);
-	// 	if (regResponse.success) {
-	// 		setSuccessMsg('register_successful');
-	// 	} else {
-	// 		if (regResponse.message === 'alreadyExists') {
-	// 			setErrorMsg('email_already_exists');
-	// 		} else {
-	// 			setErrorMsg('error_occurs');
-	// 		}
-	// 	}
-	// };
-
 	const onSubmit = (data: IObject) => {
-		console.log(data);
+		nProgress.start();
+		axiosIns
+			.post('/user/register', data)
+			.then((res: any) => {
+				setAuthUser(res.data?.data);
+				toast.success(res?.data?.message);
+			})
+			.catch((err) => toast.error(err.message))
+			.finally(() => nProgress.done());
 	};
-
-	// auth.user ? console.log(auth.user) : console.log('No User');
 
 	return (
 		<>

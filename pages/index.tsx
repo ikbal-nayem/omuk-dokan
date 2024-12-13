@@ -135,7 +135,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 	const collections = await axiosIns.get('/product-config/collections?isActive=true');
 
 	const fetchedProducts = res.data;
-	products = fetchedProducts.data.map((product: IProduct) => {
+	products = fetchedProducts.data?.map((product: IProduct) => {
 		// product.img1 = product?.images?.[0] || null;
 		// product.img2 = product?.images?.[1] || null;
 		product.img1 = COMMON_URL.SHIRT_IMG;

@@ -24,7 +24,7 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
 
 	let modalBox: JSX.Element;
 	if (auth.user) {
-		modalBox = <SuccessModal successMsg={successMsg} setSuccessMsg={setSuccessMsg} />;
+		modalBox = <SuccessModal successMsg={successMsg} />;
 	} else {
 		if (currentPage === 'login') {
 			modalBox = (
@@ -42,7 +42,6 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
 					onLogin={() => setCurrentPage('login')}
 					errorMsg={errorMsg}
 					setErrorMsg={setErrorMsg}
-					setSuccessMsg={setSuccessMsg}
 				/>
 			);
 		} else {
@@ -57,17 +56,17 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
 		}
 	}
 
-	function closeModal() {
+	const closeModal = () => {
 		setOpen(false);
 		setErrorMsg('');
 		setTimeout(() => {
 			setSuccessMsg('profile');
 		}, 100);
-	}
+	};
 
-	function openModal() {
+	const openModal = () => {
 		setOpen(true);
-	}
+	};
 
 	return (
 		<>
@@ -120,31 +119,6 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
 									&#10005;
 								</button>
 								{modalBox}
-								{/* {auth.user ? (
-                  <SuccessModal
-                    successMsg={successMsg}
-                    setSuccessMsg={setSuccessMsg}
-                  />
-                ) : (if (currentPage === "login") {(
-                  <Login
-                    onRegister={() => setCurrentPage("login")}
-                    errorMsg={errorMsg}
-                    setErrorMsg={setErrorMsg}
-                    setSuccessMsg={setSuccessMsg}
-                  />
-                )} else if (currentPage === "register") {(
-                  <Register
-                    onLogin={() => setCurrentPage("register")}
-                    errorMsg={errorMsg}
-                    setErrorMsg={setErrorMsg}
-                    setSuccessMsg={setSuccessMsg}
-                  />
-                )} else {(
-                  <ForgotPassword onRegister={() => setCurrentPage("login")}
-                  errorMsg={errorMsg}
-                  setErrorMsg={setErrorMsg}
-                  setSuccessMsg={setSuccessMsg} />
-                )})} */}
 							</div>
 						</TransitionChild>
 					</div>
@@ -154,42 +128,28 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
 	);
 };
 
-const SuccessModal = ({
-	successMsg,
-	setSuccessMsg,
-}: {
-	successMsg: string;
-	setSuccessMsg: React.Dispatch<React.SetStateAction<string>>;
-}) => {
+const SuccessModal = ({ successMsg }: { successMsg: string }) => {
 	const t = useTranslations('LoginRegister');
 	const auth = useAuth();
 
 	const handleLogout = () => {
 		auth.logout!();
-		setSuccessMsg('');
 	};
+
 	return (
 		<>
 			<DialogTitle
 				as='h3'
 				className='text-xl md:text-2xl whitespace-nowrap text-center my-8 font-medium leading-6 text-gray-900'
 			>
-				{/* {t("login_successful")} */}
-				{/* {t("register_successful")} */}
 				{successMsg !== '' ? t(successMsg) : t('profile')}
 			</DialogTitle>
 			<div className='mb-12'>
 				<div>
-					{t('name')} - {auth.user?.fullname}
+					{t('name')} - {auth.user?.firstName} {auth.user?.lastName}
 				</div>
 				<div>
 					{t('email_address')} - {auth.user?.email}
-				</div>
-				<div>
-					{t('phone')} - {auth.user?.phone && auth.user?.phone}
-				</div>
-				<div>
-					{t('shipping_address')} - {auth.user?.shippingAddress && auth.user?.shippingAddress}
 				</div>
 			</div>
 			<div className='flex justify-center items-center'>

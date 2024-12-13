@@ -8,9 +8,11 @@ import { AppProvider } from '../context/App/app.context';
 import { ProvideAuth } from '../context/auth.context';
 import { ProvideCart } from '../context/cart/CartProvider';
 import { ProvideWishlist } from '../context/wishlist/WishlistProvider';
+import { ToastContainer } from 'react-toastify';
 
 import 'animate.css';
 import 'nprogress/nprogress.css';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/globals.css';
 
 // Import Swiper styles
@@ -46,6 +48,7 @@ const MyApp = ({ Component, pageProps }: AppCustomProps) => {
 					</ProvideAuth>
 				</IntlProvider>
 			</AppProvider>
+			<ToastContainer />
 		</QueryClientProvider>
 	);
 };
