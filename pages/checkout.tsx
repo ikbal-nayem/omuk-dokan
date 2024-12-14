@@ -8,12 +8,10 @@ import AuthForm from '@/components/Auth/AuthForm';
 import Button from '@/components/Buttons/Button';
 import Footer from '@/components/Footer/Footer';
 import Header from '@/components/Header/Header';
-import Input from '@/components/Input/Input';
 import { useApp } from '@/context/App/app.context';
 import { useAuth } from '@/context/auth.context';
 import { useCart } from '@/context/cart/CartProvider';
 import { ICartItems } from '@/interface/order.interface';
-import { isNull } from '@/utils/check-validation';
 import { deliveryOptions } from '../components/Util/temp-data';
 
 // let w = window.innerWidth;
@@ -39,17 +37,12 @@ const ShoppingCart = () => {
 	const t = useTranslations('CartWishlist');
 	const a = useTranslations('LoginRegister');
 	const { cart, clearCart } = useCart();
-	const auth = useAuth();
+	const { isLoggedIn, user } = useAuth();
 	const { deliveryOption, dispatchApp } = useApp();
 	const [paymentMethod, setPaymentMethod] = useState<PaymentType>('CASH_ON_DELIVERY');
 
-	// Form Fields
-	const [name, setName] = useState(auth.user?.fullname || '');
-	const [email, setEmail] = useState(auth.user?.email || '');
-	const [phone, setPhone] = useState(auth.user?.phone || '');
-	const [password, setPassword] = useState('');
 	const [diffAddr, setDiffAddr] = useState(false);
-	const [address, setAddress] = useState(auth.user?.shippingAddress || '');
+	// const [address, setAddress] = useState(auth.user?.shippingAddress || '');
 	const [shippingAddress, setShippingAddress] = useState('');
 	const [isOrdering, setIsOrdering] = useState(false);
 	const [errorMsg, setErrorMsg] = useState('');
@@ -66,26 +59,10 @@ const ShoppingCart = () => {
 		if (!isOrdering) return;
 
 		setErrorMsg('');
-
-		// if not logged in, register the user
-		const registerUser = async () => {
-			const regResponse = await auth.register!(email, name, password, address, phone);
-			if (!regResponse.success) {
-				setIsOrdering(false);
-				if (regResponse.message === 'alreadyExists') {
-					setErrorMsg('email_already_exists');
-				} else {
-					setErrorMsg('error_occurs');
-				}
-				return false;
-			}
-		};
-		if (!auth.user) registerUser();
-
 		const makeOrder = async () => {
 			const res = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/orders`, {
-				customerId: auth!.user!.id,
-				shippingAddress: shippingAddress ? shippingAddress : address,
+				customerId: user!._id,
+				// shippingAddress: shippingAddress ? shippingAddress : address,
 				totalPrice: subtotal,
 				deliveryDate: new Date().setDate(new Date().getDate() + 7),
 				paymentType: paymentMethod,
@@ -101,31 +78,8 @@ const ShoppingCart = () => {
 				setOrderError('error_occurs');
 			}
 		};
-		if (auth.user) makeOrder();
-	}, [isOrdering, completedOrder, auth.user]);
-
-	useEffect(() => {
-		if (auth.user) {
-			setName(auth.user.fullname);
-			setEmail(auth.user.email);
-			setAddress(auth.user.shippingAddress || '');
-			setPhone(auth.user.phone || '');
-		} else {
-			setName('');
-			setEmail('');
-			setAddress('');
-			setPhone('');
-		}
-	}, [auth.user]);
-
-	let disableOrder = true;
-
-	if (!auth.user) {
-		disableOrder =
-			name !== '' && email !== '' && phone !== '' && address !== '' && password !== '' ? false : true;
-	} else {
-		disableOrder = name !== '' && email !== '' && phone !== '' && address !== '' ? false : true;
-	}
+		if (isLoggedIn) makeOrder();
+	}, [isOrdering, completedOrder, isLoggedIn]);
 
 	let subtotal: number | string = 0;
 
@@ -147,16 +101,6 @@ const ShoppingCart = () => {
 					<h1 className='text-2xl sm:text-4xl text-center sm:text-left mt-6 mb-2 animatee__animated animate__bounce'>
 						{t('checkout')}
 					</h1>
-					{isNull(auth.user) && (
-						<span className='flex'>
-							{a('already_member')}
-							<AuthForm>
-								<span className='ml-2 text-gray500 hover:text-gray400 hover:underline focus:outline-none focus:underline cursor-pointer'>
-									{a('login')}
-								</span>
-							</AuthForm>
-						</span>
-					)}
 				</div>
 
 				{/* ===== Form Section ===== */}
@@ -164,68 +108,34 @@ const ShoppingCart = () => {
 					<div className='app-max-width px-4 sm:px-8 md:px-20 mb-14 flex flex-col lg:flex-row'>
 						<div className='h-full w-full lg:w-7/12 mr-8'>
 							{errorMsg !== '' && <span className='text-red text-sm font-semibold'>- {t(errorMsg)}</span>}
-							<div className='my-4'>
-								<label htmlFor='name' className='text-lg'>
-									{a('name')}
-								</label>
-								<Input
-									name='name'
-									type='text'
-									extraClass='w-full mt-1 mb-2'
-									border='border-2 border-gray400'
-									value={name}
-									onChange={(e) => setName((e.target as HTMLInputElement).value)}
-									required
-								/>
-							</div>
 
-							<div className='my-4'>
-								<label htmlFor='email' className='text-lg mb-1'>
-									{a('email_address')}
-								</label>
-								<Input
-									name='email'
-									type='email'
-									readOnly={auth.user ? true : false}
-									extraClass={`w-full mt-1 mb-2 ${auth.user ? 'bg-gray100 cursor-not-allowed' : ''}`}
-									border='border-2 border-gray400'
-									value={email}
-									onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
-									required
-								/>
-							</div>
-
-							{!auth.user && (
-								<div className='my-4'>
-									<label htmlFor='password' className='text-lg'>
-										{a('password')}
-									</label>
-									<Input
-										name='password'
-										type='password'
-										extraClass='w-full mt-1 mb-2'
-										border='border-2 border-gray400'
-										value={password}
-										onChange={(e) => setPassword((e.target as HTMLInputElement).value)}
-										required
-									/>
+							{!isLoggedIn ? (
+								<div className='p-4 border border-gray300 my-4'>
+									<p className='text-gray-200 text-center mb-5 font-bold'>
+										Please login to complete your order.
+									</p>
+									<AuthForm extraClass='w-full bg-gray500 text-white font-bold py-1'>{a('login')}</AuthForm>
+								</div>
+							) : (
+								<div>
+									<div className='my-4'>
+										<div>
+											<span className='text-gray400'>{t('name')}</span><br />
+											<span className='text-lg'>
+												{user?.firstName} {user?.lastName}
+											</span>
+										</div>
+										<div className='mt-3'>
+											<span className='text-gray400'>Email</span><br />
+											<span className='text-lg'>{user?.email}</span>
+										</div>
+										<div className='mt-3'>
+											<span className='text-gray400'>Mobile</span><br />
+											<span className='text-lg'>{user?.mobile}</span>
+										</div>
+									</div>
 								</div>
 							)}
-
-							<div className='my-4'>
-								<label htmlFor='phone' className='text-lg'>
-									{a('phone')}
-								</label>
-								<Input
-									name='phone'
-									type='text'
-									extraClass='w-full mt-1 mb-2'
-									border='border-2 border-gray400'
-									value={phone}
-									onChange={(e) => setPhone((e.target as HTMLInputElement).value)}
-									required
-								/>
-							</div>
 
 							<div className='my-4'>
 								<label htmlFor='address' className='text-lg'>
@@ -235,8 +145,8 @@ const ShoppingCart = () => {
 									aria-label='Address'
 									className='w-full mt-1 mb-2 border-2 border-gray400 p-4 outline-none'
 									rows={4}
-									value={address}
-									onChange={(e) => setAddress((e.target as HTMLTextAreaElement).value)}
+									// value={address}
+									// onChange={(e) => setAddress((e.target as HTMLTextAreaElement).value)}
 								/>
 							</div>
 
@@ -273,8 +183,6 @@ const ShoppingCart = () => {
 									/>
 								</div>
 							)}
-
-							{!auth.user && <div className='text-sm text-gray400 mt-8 leading-6'>{t('form_note')}</div>}
 						</div>
 						<div className='h-full w-full lg:w-5/12 mt-10 lg:mt-4'>
 							{/* Cart Totals */}
@@ -434,7 +342,7 @@ const ShoppingCart = () => {
 									size='xl'
 									extraClass={`w-full`}
 									onClick={() => setIsOrdering(true)}
-									disabled={disableOrder}
+									disabled={!isLoggedIn}
 								/>
 							</div>
 
@@ -444,7 +352,6 @@ const ShoppingCart = () => {
 				) : (
 					<div className='app-max-width px-4 sm:px-8 md:px-20 mb-14 mt-6'>
 						<div className='text-gray400 text-base'>{t('thank_you_note')}</div>
-
 						<div className='flex flex-col md:flex-row'>
 							<div className='h-full w-full md:w-1/2 mt-2 lg:mt-4'>
 								<div className='border border-gray500 p-6 divide-y-2 divide-gray200'>
@@ -456,7 +363,7 @@ const ShoppingCart = () => {
 									<div className='pt-2'>
 										<div className='flex justify-between mb-2'>
 											<span className='text-base'>{t('email_address')}</span>
-											<span className='text-base'>{auth.user?.email}</span>
+											<span className='text-base'>{user?.email}</span>
 										</div>
 										<div className='flex justify-between mb-2'>
 											<span className='text-base'>{t('order_date')}</span>

@@ -1,10 +1,15 @@
-import { DialogTitle } from "@headlessui/react";
-import { useTranslations } from "next-intl";
-import React, { useState } from "react";
+import { DialogTitle } from '@headlessui/react';
+import { useTranslations } from 'next-intl';
+import React, { useState } from 'react';
 
-import { useAuth } from "@/context/auth.context";
-import Button from "../Buttons/Button";
-import Input from "../Input/Input";
+import { useAuth } from '@/context/auth.context';
+import { IObject } from '@/interface/common.interface';
+import nProgress from 'nprogress';
+import { useForm } from 'react-hook-form';
+import axiosIns from 'services/api/axios.config';
+import { toast } from 'services/utils/toastr.service';
+import Button from '../Buttons/Button';
+import Input from '../Input/Input';
 
 type Props = {
 	onRegister: () => void;
@@ -14,20 +19,30 @@ type Props = {
 	setSuccessMsg: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const Login: React.FC<Props> = ({ onRegister, onForgotPassword, errorMsg, setErrorMsg, setSuccessMsg }) => {
-	const auth = useAuth();
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
+const Login: React.FC<Props> = ({ onRegister, onForgotPassword, errorMsg }) => {
+	const [isLoading, setLoading] = useState(false);
+	const { setAuthUser } = useAuth();
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm();
 	const t = useTranslations('LoginRegister');
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		const loginResponse = await auth.login!(email, password);
-		if (loginResponse.success) {
-			setSuccessMsg('login_successful');
-		} else {
-			setErrorMsg('incorrect_email_password');
-		}
+	const onSubmit = (data: IObject) => {
+		nProgress.start();
+		setLoading(true);
+		axiosIns
+			.post('/user/login', data)
+			.then((res: any) => {
+				toast.success('Successfully logged in');
+				setAuthUser(res.data);
+			})
+			.catch((err) => toast.error(err.message))
+			.finally(() => {
+				nProgress.done();
+				setLoading(false);
+			});
 	};
 
 	return (
@@ -35,29 +50,30 @@ const Login: React.FC<Props> = ({ onRegister, onForgotPassword, errorMsg, setErr
 			<DialogTitle as='h3' className='text-4xl text-center my-8 font-medium leading-6 text-gray-900'>
 				{t('login')}
 			</DialogTitle>
-			<form onSubmit={handleSubmit} className='mt-2'>
+			<form onSubmit={handleSubmit(onSubmit)} className='mt-2'>
 				<Input
 					type='email'
 					placeholder={`${t('email_address')} *`}
-					name='email'
 					required
 					className='mb-4'
-					onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
-					value={email}
+					autoFocus
+					registerProperty={{ ...register('email', { required: 'Please provide email or mobile number' }) }}
+					color={errors.email ? 'danger' : 'primary'}
+					message={errors.email?.message as string}
 				/>
 				<Input
 					type='password'
 					placeholder={`${t('password')} *`}
-					name='password'
 					required
 					className='mb-4'
-					onChange={(e) => setPassword((e.target as HTMLInputElement).value)}
-					value={password}
+					registerProperty={{ ...register('password', { required: 'Password is required' }) }}
+					color={errors.password ? 'danger' : 'primary'}
+					message={errors.password?.message as string}
 				/>
 				{errorMsg !== '' && <div className='text-red text-sm mb-4 whitespace-nowrap'>{t(errorMsg)}</div>}
 				<div className='flex justify-between mb-4'>
 					<div className='flex items-center text-gray400 focus:outline-none'>
-						<input type='checkbox' id='remember' name='remember' className='w-4 h-4 mb-0 mr-2' />
+						<input type='checkbox' id='remember' className='w-4 h-4 mb-0 mr-2' {...register('remember')} />
 						<label htmlFor='remember' className='text-sm'>
 							{t('remember_me')}
 						</label>
@@ -69,7 +85,13 @@ const Login: React.FC<Props> = ({ onRegister, onForgotPassword, errorMsg, setErr
 						{t('forgot_password')}
 					</span>
 				</div>
-				<Button type='submit' value={t('login')} extraClass='w-full text-center text-xl mb-4' size='lg' />
+				<Button
+					type='submit'
+					value={t('login')}
+					extraClass='w-full text-center text-xl mb-4'
+					disabled={isLoading}
+					size='lg'
+				/>
 				<div className='text-center text-gray400'>
 					{t('not_member')}{' '}
 					<span

@@ -41,7 +41,6 @@ const LoginForm: FC<Props> = ({ extraClass, children }) => {
 				<Register
 					onLogin={() => setCurrentPage('login')}
 					errorMsg={errorMsg}
-					setErrorMsg={setErrorMsg}
 				/>
 			);
 		} else {

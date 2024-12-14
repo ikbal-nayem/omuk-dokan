@@ -15,10 +15,9 @@ import Input from '../Input/Input';
 type Props = {
 	onLogin: () => void;
 	errorMsg: string;
-	setErrorMsg: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const Register: React.FC<Props> = ({ onLogin, errorMsg, setErrorMsg }) => {
+const Register: React.FC<Props> = ({ onLogin, errorMsg }) => {
 	const { setAuthUser } = useAuth();
 	const {
 		register,
