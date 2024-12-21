@@ -1,9 +1,4 @@
-import axios from 'axios';
-import { GetStaticProps } from 'next';
-import { useTranslations } from 'next-intl';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-
+import AddressInputModal from '@/components/Address/input-modal';
 import AuthForm from '@/components/Auth/AuthForm';
 import Button from '@/components/Buttons/Button';
 import Footer from '@/components/Footer/Footer';
@@ -12,6 +7,11 @@ import { useApp } from '@/context/App/app.context';
 import { useAuth } from '@/context/auth.context';
 import { useCart } from '@/context/cart/CartProvider';
 import { ICartItems } from '@/interface/order.interface';
+import axios from 'axios';
+import { GetStaticProps } from 'next';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { deliveryOptions } from '../components/Util/temp-data';
 
 // let w = window.innerWidth;
@@ -40,10 +40,8 @@ const ShoppingCart = () => {
 	const { isLoggedIn, user } = useAuth();
 	const { deliveryOption, dispatchApp } = useApp();
 	const [paymentMethod, setPaymentMethod] = useState<PaymentType>('CASH_ON_DELIVERY');
+	const [address, setAddress] = useState('');
 
-	const [diffAddr, setDiffAddr] = useState(false);
-	// const [address, setAddress] = useState(auth.user?.shippingAddress || '');
-	const [shippingAddress, setShippingAddress] = useState('');
 	const [isOrdering, setIsOrdering] = useState(false);
 	const [errorMsg, setErrorMsg] = useState('');
 	const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
@@ -120,67 +118,29 @@ const ShoppingCart = () => {
 								<div>
 									<div className='my-4'>
 										<div>
-											<span className='text-gray400'>{t('name')}</span><br />
+											<span className='text-gray400'>{t('name')}</span>
+											<br />
 											<span className='text-lg'>
 												{user?.firstName} {user?.lastName}
 											</span>
 										</div>
 										<div className='mt-3'>
-											<span className='text-gray400'>Email</span><br />
+											<span className='text-gray400'>Email</span>
+											<br />
 											<span className='text-lg'>{user?.email}</span>
 										</div>
 										<div className='mt-3'>
-											<span className='text-gray400'>Mobile</span><br />
-											<span className='text-lg'>{user?.mobile}</span>
+											<span className='text-gray400'>Mobile</span>
+											<br />
+											<span className='text-lg'>{user?.mobile || '-'}</span>
+										</div>
+										<div className='mt-3'>
+											<span className='text-gray400'>Address</span>
+											<br />
+											<span className='text-lg'>{user?.mobile || '-'}</span>
 										</div>
 									</div>
-								</div>
-							)}
-
-							<div className='my-4'>
-								<label htmlFor='address' className='text-lg'>
-									{t('address')}
-								</label>
-								<textarea
-									aria-label='Address'
-									className='w-full mt-1 mb-2 border-2 border-gray400 p-4 outline-none'
-									rows={4}
-									// value={address}
-									// onChange={(e) => setAddress((e.target as HTMLTextAreaElement).value)}
-								/>
-							</div>
-
-							<div className='relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in'>
-								<input
-									type='checkbox'
-									name='toggle'
-									id='toggle'
-									checked={diffAddr}
-									onChange={() => setDiffAddr(!diffAddr)}
-									className='toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray300 appearance-none cursor-pointer'
-								/>
-								<label
-									htmlFor='toggle'
-									className='toggle-label block overflow-hidden h-6 rounded-full bg-gray300 cursor-pointer'
-								></label>
-							</div>
-							<label htmlFor='toggle' className='text-xs text-gray-700'>
-								{t('different_shipping_address')}
-							</label>
-
-							{diffAddr && (
-								<div className='my-4'>
-									<label htmlFor='shipping_address' className='text-lg'>
-										{t('shipping_address')}
-									</label>
-									<textarea
-										id='shipping_address'
-										aria-label='shipping address'
-										className='w-full mt-1 mb-2 border-2 border-gray400 p-4 outline-none'
-										rows={4}
-										value={shippingAddress}
-										onChange={(e) => setShippingAddress((e.target as HTMLTextAreaElement).value)}
-									/>
+									<AddressInputModal />
 								</div>
 							)}
 						</div>

@@ -1,8 +1,13 @@
 export const deliveryOptions = [
   {
-    code: 'HD',
-    title: 'Home Delivery',
-    charge: 70
+    code: 'ID',
+    title: 'Inside Dhaka',
+    charge: 60
+  },
+  {
+    code: 'OD',
+    title: 'Outside Dhaka',
+    charge: 120
   },
   {
     code: 'SP',

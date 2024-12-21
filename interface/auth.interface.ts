@@ -1,14 +1,19 @@
 export type IUser = {
+	_id: string;
 	firstName: string;
 	lastName: string;
 	email: string;
 	mobile: string;
+	address: {
+		_id?: string;
+		isDefault: boolean;
+		address: string;
+	}[];
 	isAdmin: boolean;
 	isSuperAdmin: boolean;
-	roles: Array<[]>;
+	roles: string[];
 	isDeleted: boolean;
 	isActive: boolean;
-	_id: string;
 	createdAt: string;
 	updatedAt: string;
 };
