@@ -1,3 +1,4 @@
+import AddressDelete from '@/components/Address/delete-address';
 import AddressInputModal from '@/components/Address/input-modal';
 import AuthForm from '@/components/Auth/AuthForm';
 import Button from '@/components/Buttons/Button';
@@ -6,78 +7,39 @@ import Header from '@/components/Header/Header';
 import { useApp } from '@/context/App/app.context';
 import { useAuth } from '@/context/auth.context';
 import { useCart } from '@/context/cart/CartProvider';
-import { ICartItems } from '@/interface/order.interface';
-import axios from 'axios';
+import { ICartItems, IOrderDetails, IOrderPayload, IPaymentOption } from '@/interface/order.interface';
 import { GetStaticProps } from 'next';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { deliveryOptions } from '../components/Util/temp-data';
-
-// let w = window.innerWidth;
-type PaymentType = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER';
-type DeliveryType = 'STORE_PICKUP' | 'YANGON' | 'OTHERS';
-
-type Order = {
-	orderNumber: number;
-	customerId: number;
-	shippingAddress: string;
-	township?: null | string;
-	city?: null | string;
-	state?: null | string;
-	zipCode?: null | string;
-	orderDate: string;
-	paymentType: PaymentType;
-	deliveryType: DeliveryType;
-	totalPrice: number;
-	deliveryDate: string;
-};
+import { deliveryOptions, paymentOptions } from '../components/Util/temp-data';
 
 const ShoppingCart = () => {
 	const t = useTranslations('CartWishlist');
 	const a = useTranslations('LoginRegister');
 	const { cart, clearCart } = useCart();
-	const { isLoggedIn, user } = useAuth();
+	const { isLoggedIn, user, isLoading } = useAuth();
 	const { deliveryOption, dispatchApp } = useApp();
-	const [paymentMethod, setPaymentMethod] = useState<PaymentType>('CASH_ON_DELIVERY');
-	const [address, setAddress] = useState('');
+
+	const [paymentMethod, setPaymentMethod] = useState<IPaymentOption>(
+		paymentOptions.find((op) => op.isDefault)!
+	);
+	const [selectedAddress, setAddress] = useState<string>(
+		user?.address?.find((op) => op.isDefault)!.address || ''
+	);
+	const [sendEmail, setSendEmail] = useState(false);
 
 	const [isOrdering, setIsOrdering] = useState(false);
 	const [errorMsg, setErrorMsg] = useState('');
-	const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+	const [completedOrder, setCompletedOrder] = useState<IOrderDetails | null>(null);
 	const [orderError, setOrderError] = useState('');
-	const [sendEmail, setSendEmail] = useState(false);
-
-	const products = cart.map((item) => ({
-		id: item._id,
-		quantity: item.qty,
-	}));
 
 	useEffect(() => {
-		if (!isOrdering) return;
-
-		setErrorMsg('');
-		const makeOrder = async () => {
-			const res = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/orders`, {
-				customerId: user!._id,
-				// shippingAddress: shippingAddress ? shippingAddress : address,
-				totalPrice: subtotal,
-				deliveryDate: new Date().setDate(new Date().getDate() + 7),
-				paymentType: paymentMethod,
-				deliveryType: deliveryOption,
-				products,
-				sendEmail,
-			});
-			if (res.data.success) {
-				setCompletedOrder(res.data.data);
-				clearCart!();
-				setIsOrdering(false);
-			} else {
-				setOrderError('error_occurs');
-			}
-		};
-		if (isLoggedIn) makeOrder();
-	}, [isOrdering, completedOrder, isLoggedIn]);
+		if (!isLoggedIn) return;
+		let address = user?.address?.find((op) => op.address === selectedAddress)!.address;
+		if (!address) address = user?.address?.find((op) => op.isDefault)!.address;
+		if (!address) address = user?.address?.[0]?.address || '';
+		setAddress(address);
+	}, [user?.address]);
 
 	let subtotal: number | string = 0;
 
@@ -87,6 +49,22 @@ const ShoppingCart = () => {
 			0
 		)
 		.toFixed(2);
+
+	const grandTotal = parseInt(subtotal) + deliveryOption.charge;
+
+	const onOrderPlace = () => {
+		const orderData: IOrderPayload = {
+			items: cart,
+			deliveryAddress: selectedAddress,
+			deliveryOption: deliveryOption,
+			discount: 0,
+			paymentOption: paymentMethod,
+			subTotal: parseInt(subtotal),
+			shippingCost: deliveryOption.charge,
+			total: grandTotal,
+		};
+		console.log(orderData);
+	};
 
 	return (
 		<div>
@@ -108,12 +86,16 @@ const ShoppingCart = () => {
 							{errorMsg !== '' && <span className='text-red text-sm font-semibold'>- {t(errorMsg)}</span>}
 
 							{!isLoggedIn ? (
-								<div className='p-4 border border-gray300 my-4'>
-									<p className='text-gray-200 text-center mb-5 font-bold'>
-										Please login to complete your order.
-									</p>
-									<AuthForm extraClass='w-full bg-gray500 text-white font-bold py-1'>{a('login')}</AuthForm>
-								</div>
+								isLoading ? (
+									<div>Loading user information...</div>
+								) : (
+									<div className='p-4 border border-gray300 my-4'>
+										<p className='text-gray-200 text-center mb-5 font-bold'>
+											Please login to complete your order.
+										</p>
+										<AuthForm extraClass='w-full bg-gray500 text-white font-bold py-1'>{a('login')}</AuthForm>
+									</div>
+								)
 							) : (
 								<div>
 									<div className='my-4'>
@@ -136,8 +118,33 @@ const ShoppingCart = () => {
 										</div>
 										<div className='mt-3'>
 											<span className='text-gray400'>Address</span>
-											<br />
-											<span className='text-lg'>{user?.mobile || '-'}</span>
+											{user?.address?.map((add, idx) => (
+												<div
+													className='border border-gray200 rounded-lg p-2 flex justify-between items-center mb-3'
+													key={idx}
+												>
+													<div className='flex items-center space-x-2'>
+														<input
+															type='radio'
+															className='h-4 w-4'
+															value={add?.address}
+															id={idx?.toString()}
+															checked={add?.address === selectedAddress}
+															onChange={() => setAddress(add?.address)}
+														/>
+														<label htmlFor={idx?.toString()} className='cursor-pointer'>
+															{add?.address}
+														</label>
+														{add?.isDefault && (
+															<span className='rounded-xl bg-gray200 px-2 text-gray400 text-sm'>Default</span>
+														)}
+													</div>
+													<div className='flex space-x-2'>
+														{/* <EditIcon extraClass='w-4 h-4 cursor-pointer' /> */}
+														<AddressDelete address={add} />
+													</div>
+												</div>
+											))}
 										</div>
 									</div>
 									<AddressInputModal />
@@ -173,9 +180,10 @@ const ShoppingCart = () => {
 									<div className='mt-3 space-y-2'>
 										{deliveryOptions.map((option) => (
 											<div className='flex justify-between' key={option.code}>
-												<div className='space-x-2'>
+												<div className='flex items-center space-x-2'>
 													<input
 														type='radio'
+														className='h-4 w-4'
 														name={option.code}
 														value={option?.code}
 														id={option?.code}
@@ -195,85 +203,50 @@ const ShoppingCart = () => {
 								<div>
 									<div className='flex justify-between py-3'>
 										<span>{t('grand_total')}</span>
-										<span>৳ {(+subtotal + deliveryOption.charge).toFixed(2)}</span>
+										<span>৳ {grandTotal?.toFixed(2)}</span>
 									</div>
 
 									<div className='grid gap-4 mt-2 mb-4'>
-										<label
-											htmlFor='plan-cash'
-											className='relative flex flex-col bg-white p-5 rounded-lg shadow-md border border-gray300 cursor-pointer'
-										>
-											<span className='font-semibold text-gray-500 text-base leading-tight capitalize'>
-												{t('cash_on_delivery')}
-											</span>
-											<input
-												type='radio'
-												name='plan'
-												id='plan-cash'
-												value='CASH_ON_DELIVERY'
-												className='absolute h-0 w-0 appearance-none'
-												onChange={() => setPaymentMethod('CASH_ON_DELIVERY')}
-											/>
-											<span
-												aria-hidden='true'
-												className={`${
-													paymentMethod === 'CASH_ON_DELIVERY' ? 'block' : 'hidden'
-												} absolute inset-0 border-2 border-gray500 bg-opacity-10 rounded-lg`}
+										{paymentOptions.map((option) => (
+											<label
+												htmlFor={option.code}
+												className='relative flex flex-col bg-white p-5 rounded-lg shadow-md border border-gray300 cursor-pointer'
 											>
-												<span className='absolute top-4 right-4 h-6 w-6 inline-flex items-center justify-center rounded-full bg-gray100'>
-													<svg
-														xmlns='http://www.w3.org/2000/svg'
-														viewBox='0 0 20 20'
-														fill='currentColor'
-														className='h-5 w-5 text-green-600'
-													>
-														<path
-															fillRule='evenodd'
-															d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-															clipRule='evenodd'
-														/>
-													</svg>
+												<span className='font-semibold text-gray-500 text-base leading-tight capitalize'>
+													{option.title}
 												</span>
-											</span>
-										</label>
-										<label
-											htmlFor='plan-bank'
-											className='relative flex flex-col bg-white p-5 rounded-lg shadow-md border border-gray300 cursor-pointer'
-										>
-											<span className='font-semibold text-gray-500 leading-tight capitalize'>
-												{t('bank_transfer')}
-											</span>
-											<span className='text-gray400 text-sm mt-1'>{t('bank_transfer_desc')}</span>
-											<input
-												type='radio'
-												name='plan'
-												id='plan-bank'
-												value='BANK_TRANSFER'
-												className='absolute h-0 w-0 appearance-none'
-												onChange={() => setPaymentMethod('BANK_TRANSFER')}
-											/>
-											<span
-												aria-hidden='true'
-												className={`${
-													paymentMethod === 'BANK_TRANSFER' ? 'block' : 'hidden'
-												} absolute inset-0 border-2 border-gray500 bg-opacity-10 rounded-lg`}
-											>
-												<span className='absolute top-4 right-4 h-6 w-6 inline-flex items-center justify-center rounded-full bg-gray100'>
-													<svg
-														xmlns='http://www.w3.org/2000/svg'
-														viewBox='0 0 20 20'
-														fill='currentColor'
-														className='h-5 w-5 text-green-600'
-													>
-														<path
-															fillRule='evenodd'
-															d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-															clipRule='evenodd'
-														/>
-													</svg>
+												{/* <span className='text-gray400 text-sm mt-1'>{t('bank_transfer_desc')}</span> */}
+												<input
+													type='radio'
+													name='plan'
+													id={option.code}
+													value={option.code}
+													className='absolute h-0 w-0 appearance-none'
+													onChange={() => setPaymentMethod(option)}
+												/>
+												<span
+													aria-hidden='true'
+													className={`${
+														paymentMethod?.code === option.code ? 'block' : 'hidden'
+													} absolute inset-0 border-2 border-gray500 bg-opacity-10 rounded-lg`}
+												>
+													<span className='absolute top-4 right-4 h-6 w-6 inline-flex items-center justify-center rounded-full bg-gray100'>
+														<svg
+															xmlns='http://www.w3.org/2000/svg'
+															viewBox='0 0 20 20'
+															fill='currentColor'
+															className='h-5 w-5 text-green-600'
+														>
+															<path
+																fillRule='evenodd'
+																d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+																clipRule='evenodd'
+															/>
+														</svg>
+													</span>
 												</span>
-											</span>
-										</label>
+											</label>
+										))}
 									</div>
 
 									<div className='my-8'>
@@ -301,7 +274,7 @@ const ShoppingCart = () => {
 									value={t('place_order')}
 									size='xl'
 									extraClass={`w-full`}
-									onClick={() => setIsOrdering(true)}
+									onClick={onOrderPlace}
 									disabled={!isLoggedIn}
 								/>
 							</div>
@@ -317,7 +290,7 @@ const ShoppingCart = () => {
 								<div className='border border-gray500 p-6 divide-y-2 divide-gray200'>
 									<div className='flex justify-between'>
 										<span className='text-base uppercase mb-3'>{t('order_id')}</span>
-										<span className='text-base uppercase mb-3'>{completedOrder.orderNumber}</span>
+										<span className='text-base uppercase mb-3'>{completedOrder.orderNo}</span>
 									</div>
 
 									<div className='pt-2'>
@@ -328,7 +301,7 @@ const ShoppingCart = () => {
 										<div className='flex justify-between mb-2'>
 											<span className='text-base'>{t('order_date')}</span>
 											<span className='text-base'>
-												{new Date(completedOrder.orderDate).toLocaleDateString()}
+												{new Date(completedOrder.createdAt).toLocaleDateString()}
 											</span>
 										</div>
 										<div className='flex justify-between mb-2'>
@@ -342,64 +315,19 @@ const ShoppingCart = () => {
 									<div className='py-3'>
 										<div className='flex justify-between mb-2'>
 											<span className=''>{t('payment_method')}</span>
-											<span>{completedOrder.paymentType}</span>
+											<span>{completedOrder.paymentOption?.title}</span>
 										</div>
 										<div className='flex justify-between'>
 											<span className=''>{t('delivery_method')}</span>
-											<span>{completedOrder.deliveryType}</span>
+											<span>{completedOrder.deliveryOption?.title}</span>
 										</div>
 									</div>
 
 									<div className='pt-2 flex justify-between mb-2'>
 										<span className='text-base uppercase'>{t('total')}</span>
-										<span className='text-base'>৳ {completedOrder.totalPrice}</span>
+										<span className='text-base'>৳ {completedOrder.total}</span>
 									</div>
 								</div>
-							</div>
-
-							<div className='h-full w-full md:w-1/2 md:ml-8 mt-4 md:mt-2 lg:mt-4'>
-								<div>
-									{t('your_order_received')}
-									{completedOrder.paymentType === 'BANK_TRANSFER' && t('bank_transfer_note')}
-									{completedOrder.paymentType === 'CASH_ON_DELIVERY' &&
-										completedOrder.deliveryType !== 'STORE_PICKUP' &&
-										t('cash_delivery_note')}
-									{completedOrder.deliveryType === 'STORE_PICKUP' && t('store_pickup_note')}
-									{t('thank_you_for_purchasing')}
-								</div>
-
-								{completedOrder.paymentType === 'BANK_TRANSFER' ? (
-									<div className='mt-6'>
-										<h2 className='text-xl font-bold'>{t('our_banking_details')}</h2>
-										<span className='uppercase block my-1'>Sat Naing :</span>
-
-										<div className='flex justify-between w-full xl:w-1/2'>
-											<span className='text-sm font-bold'>AYA Bank</span>
-											<span className='text-base'>20012345678</span>
-										</div>
-										<div className='flex justify-between w-full xl:w-1/2'>
-											<span className='text-sm font-bold'>CB Bank</span>
-											<span className='text-base'>0010123456780959</span>
-										</div>
-										<div className='flex justify-between w-full xl:w-1/2'>
-											<span className='text-sm font-bold'>KPay</span>
-											<span className='text-base'>095096051</span>
-										</div>
-									</div>
-								) : (
-									<div className='flex justify-center items-center h-56'>
-										<div className='w-3/4'>
-											<Image
-												className='justify-center'
-												src='/logo.svg'
-												alt='Omuk Dokan'
-												width={220}
-												height={50}
-												layout='responsive'
-											/>
-										</div>
-									</div>
-								)}
 							</div>
 						</div>
 					</div>

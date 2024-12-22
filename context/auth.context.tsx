@@ -1,4 +1,4 @@
-import { IUser } from '@/interface/auth.interface';
+import { IUser, IUserAddress } from '@/interface/auth.interface';
 import { isNull } from '@/utils/check-validation';
 import { COOKIES_DATA } from 'constants/storage.constant';
 import { deleteCookie, getCookie, setCookie } from 'cookies-next';
@@ -8,14 +8,18 @@ import axiosIns, { setHeaderToken } from 'services/api/axios.config';
 type authType = {
 	user: null | IUser;
 	isLoggedIn?: boolean;
+	isLoading: boolean;
 	setAuthUser: (user: { data: IUser; token: string }) => void;
+	setUserAddress: (address: IUserAddress[]) => void;
 	logout?: () => void;
 };
 
 const initialAuth: authType = {
 	user: null,
 	isLoggedIn: false,
+	isLoading: false,
 	setAuthUser: (user: { data: IUser; token: string }) => {},
+	setUserAddress: (address: IUserAddress[]) => {},
 	logout: () => {},
 };
 
@@ -37,17 +41,20 @@ export const useAuth = () => {
 const useProvideAuth = () => {
 	const [user, setUser] = useState<IUser | null>(null);
 	const [isLoggedIn, setLoggedIn] = useState<boolean>(false);
+	const [isLoading, setLoading] = useState<boolean>(false);
 
 	useEffect(() => {
 		const initialToken = getCookie(COOKIES_DATA.TOKEN);
 		if (!isNull(initialToken)) {
+			setLoading(true);
 			axiosIns
 				.get('/user/details')
 				.then((resp) => {
-					setAuthUser(resp.data);
+					setUser(resp.data?.data);
 					setLoggedIn(true);
 				})
-				.catch((err) => logout());
+				.catch((err) => logout())
+				.finally(() => setLoading(false));
 		}
 	}, []);
 
@@ -63,6 +70,11 @@ const useProvideAuth = () => {
 		setLoggedIn(true);
 	};
 
+	const setUserAddress = (address: IUserAddress[]) => {
+		if (!user) return;
+		setUser({ ...user, address });
+	};
+
 	const logout = () => {
 		setUser(null);
 		setLoggedIn(false);
@@ -73,7 +85,9 @@ const useProvideAuth = () => {
 	return {
 		user,
 		isLoggedIn,
+		isLoading,
 		setAuthUser,
+		setUserAddress,
 		logout,
 	};
 };

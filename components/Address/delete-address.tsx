@@ -1,41 +1,40 @@
 import { useAuth } from '@/context/auth.context';
-import { IObject } from '@/interface/common.interface';
+import { IUserAddress } from '@/interface/auth.interface';
 import { Dialog, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import clsx from 'clsx';
+import DeleteIcon from 'public/icons/Delete';
 import { Fragment, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import axiosIns from 'services/api/axios.config';
 import { toast } from 'services/utils/toastr.service';
 import Button from '../Buttons/Button';
+import nProgress from 'nprogress';
 
-const AddressInputModal = () => {
-	const [open, setOpen] = useState(false);
+const AddressDelete = ({ address }: { address: IUserAddress }) => {
+	const [open, setOpen] = useState<boolean>(false);
+	const [isDeleting, setDeleting] = useState<boolean>(false);
 	const { setUserAddress } = useAuth();
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm();
 
-	const onSubmit = (data: IObject) => {
+	const onSubmit = () => {
+		nProgress.start();
+		setDeleting(true);
 		axiosIns
-			.post('/user/address/add', data)
+			.delete('/user/address/' + address?._id)
 			.then((resp) => {
 				toast.success(resp?.data?.message);
 				setUserAddress(resp?.data?.data?.address);
 				setOpen(false);
 			})
-			.catch((err) => toast.error(err?.message));
+			.catch((err) => toast.error(err?.message))
+			.finally(() => {
+				setDeleting(false);
+				nProgress.done();
+			});
 	};
 
 	return (
 		<div>
-			<Button
-				value='New Address'
-				onClick={() => setOpen(true)}
-				extraClass='bg-transparent text-gray500 hover:text-gray400'
-				size='sm'
-			/>
+			<span onClick={() => setOpen(true)}>
+				<DeleteIcon extraClass='w-4 h-4 cursor-pointer text-red' />
+			</span>
 			<Transition show={open} as={Fragment}>
 				<Dialog
 					as='div'
@@ -82,42 +81,21 @@ const AddressInputModal = () => {
 									as='h3'
 									className='text-xl md:text-2xl whitespace-nowrap text-center font-medium'
 								>
-									Add New Address
+									Delete Address
 								</DialogTitle>
-								<form noValidate onSubmit={handleSubmit(onSubmit)} className='mt-4'>
-									<div className='mb-3'>
-										<label htmlFor='address'>
-											Enter Address <span className='text-red'>*</span>
-										</label>
-										<textarea
-											aria-label='Address'
-											className={clsx('w-full mt-1 border-2 border-gray400 p-2 outline-none', {
-												'border-red': errors.address,
-												'border-gray400': !errors.address,
-											})}
-											rows={4}
-											{...register('address', { required: 'Address is required' })}
-										/>
-									</div>
-									<div className='mb-5'>
-										<div className='relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in'>
-											<input
-												type='checkbox'
-												id='is-default'
-												className='toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray300 appearance-none cursor-pointer'
-												{...register('isDefault')}
-											/>
-											<label
-												htmlFor='is-default'
-												className='toggle-label block overflow-hidden h-6 rounded-full bg-gray300 cursor-pointer'
-											/>
-										</div>
-										<label htmlFor='is-default' className='overflow-hidden h-6 cursor-pointer'>
-											Set as default address
-										</label>
-									</div>
-									<Button value='Save Address' type='submit' />
-								</form>
+								<div className='text-center mt-4'>
+									<p>
+										Are you sure you want to delete this address?
+										<br />
+										<b>"{address?.address}"</b>
+									</p>
+									<Button
+										value='Yes, Delete'
+										extraClass='border-red bg-red text-white mt-5'
+										onClick={onSubmit}
+										disabled={isDeleting}
+									/>
+								</div>
 							</div>
 						</TransitionChild>
 					</div>
@@ -127,4 +105,4 @@ const AddressInputModal = () => {
 	);
 };
 
-export default AddressInputModal;
+export default AddressDelete;
